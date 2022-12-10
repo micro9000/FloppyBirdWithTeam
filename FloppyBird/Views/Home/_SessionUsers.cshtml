@@ -1,7 +1,13 @@
 ﻿@model FloppyBird.Models.HomeIndexModel
 
 @{
-    var currentUserGroup = Model.SessionUser.Users.FirstOrDefault(x => x.AccountToken == Model.User.AccountToken).Group;
+    var currentUserGroup = Groups.NoGroup;
+    if (Model.SessionUser != null && Model.SessionUser.Users != null)
+    {
+        var currentUserInfoInTheSession = Model.SessionUser?.Users?.FirstOrDefault(x => x.AccountToken == Model.User.AccountToken);
+        if (currentUserInfoInTheSession != null)
+            currentUserGroup = currentUserInfoInTheSession.Group;
+    }
 }
 
 <div class="row">
