@@ -3,18 +3,22 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="container w-50 mt-lg-5">
 
-    @if (Model.User == null){
+
+@if (Model.User == null)
+{
+    <div class="container w-50 mt-lg-5">
         <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="CreateNewAccount">
             <p class="fs-1 fw-bold pb-5">Enter your name</p>
             <input class="form-control form-control-lg" type="text" aria-label=".form-control-lg example" name="Username">
             <button type="submit" class="btn btn-success btn-lg mt-2">Create account</button>
         </form>
-    }
+    </div>
+}
 
-    @if (Model.CurrentSession == null && Model.User != null)
-    {
+@if (Model.CurrentSession == null && Model.User != null)
+{
+    <div class="container w-50 mt-lg-5">
         <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
         <div class="row align-content-center">
             <div class="col">
@@ -32,8 +36,8 @@
                 </form>
             </div>
         </div>
-    }
-</div>
+    </div>
+}
 
 @if (Model.CurrentSession != null && Model.User != null)
 {
@@ -48,38 +52,10 @@
                 <button type="submit" class="btn btn-success btn-lg">Start the session</button>
             </form>
 
-            <div class="row">
-                <div class="col p-5">
-                    <p class="fs-2 fw-bold pb-lg-5">Avengers</p>
-                    <ul class="list-group">
-                        @if (Model.SessionUser != null && Model.SessionUser.Users != null)
-                        {
-                            foreach (var user in Model.SessionUser?.Avengers())
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    @user.Name
-                                    <span class="badge bg-primary rounded-pill">14</span>
-                                </li>
-                            }
-                        }
-                    </ul>
-                </div>
-                <div class="col p-5">
-                    <p class="fs-2 fw-bold pb-lg-5">Justice League</p>
-                    <ul class="list-group">
-                        @if (Model.SessionUser != null && Model.SessionUser.Users != null)
-                        {
-                            foreach (var user in Model.SessionUser?.JusticeLeague())
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    @user.Name
-                                    <span class="badge bg-primary rounded-pill">14</span>
-                                </li>
-                            }
-                        }
-                    </ul>
-                </div>
-            </div>
+            @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+            {
+                @(await Html.PartialAsync("_SessionUsers.cshtml", Model));
+            }
         </div>
     }
     else
@@ -117,7 +93,7 @@
                 </div>
             </div>
             <div class="col-4">
-                <div class="row align-content-center">
+                <div class="row">
 
                     <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="LeaveTheSession">
                         <button type="submit" class="btn btn-danger btn-lg">Exit</button>
@@ -126,38 +102,10 @@
                     <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
                     <p class="fs-1 fw-bold pb-lg-5">Current session: @Model.CurrentSession.Name</p>
 
-                    <div class="row">
-                        <div class="col p-5">
-                            <p class="fs-2 fw-bold pb-lg-5">Avengers</p>
-                            <ul class="list-group">
-                                @if (Model.SessionUser != null && Model.SessionUser.Users != null)
-                                {
-                                    foreach (var user in Model.SessionUser?.Avengers())
-                                    {
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            @user.Name
-                                            <span class="badge bg-primary rounded-pill">14</span>
-                                        </li>
-                                    }
-                                }
-                            </ul>
-                        </div>
-                        <div class="col p-5">
-                            <p class="fs-2 fw-bold pb-lg-5">Justice League</p>
-                            <ul class="list-group">
-                                @if (Model.SessionUser != null && Model.SessionUser.Users != null)
-                                {
-                                    foreach (var user in Model.SessionUser?.JusticeLeague())
-                                    {
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            @user.Name
-                                            <span class="badge bg-primary rounded-pill">14</span>
-                                        </li>
-                                    }
-                                }
-                            </ul>
-                        </div>
-                    </div>
+                    @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                    {
+                        @(await Html.PartialAsync("_SessionUsers.cshtml", Model));
+                    }
                 </div>
             </div>
         </div>
