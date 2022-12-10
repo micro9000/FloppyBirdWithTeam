@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.Configure<RedisConfigOptions>(builder.Configuration.GetSection(nameof(RedisConfigOptions)));
 builder.Services.AddSingleton(async x => await RedisConnection.InitializeAsync(connectionString: builder.Configuration.GetConnectionString("RedisCacheConnString")));
 
+builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
 builder.Services.AddScoped<ISessionUsersRepository, SessionUsersRepository>();

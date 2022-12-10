@@ -48,15 +48,38 @@
                 <button type="submit" class="btn btn-success btn-lg">Start the session</button>
             </form>
 
-            <ul>
-                @if (Model.SessionUser != null && Model.SessionUser.Users != null)
-                {
-                    foreach (var user in Model.SessionUser?.Users)
-                    {
-                        <li>@user.Name</li>
-                    }
-                }
-            </ul>
+            <div class="row">
+                <div class="col p-5">
+                    <p class="fs-2 fw-bold pb-lg-5">Avengers</p>
+                    <ul class="list-group">
+                        @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                        {
+                            foreach (var user in Model.SessionUser?.Avengers())
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @user.Name
+                                    <span class="badge bg-primary rounded-pill">14</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+                <div class="col p-5">
+                    <p class="fs-2 fw-bold pb-lg-5">Justice League</p>
+                    <ul class="list-group">
+                        @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                        {
+                            foreach (var user in Model.SessionUser?.JusticeLeague())
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @user.Name
+                                    <span class="badge bg-primary rounded-pill">14</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
         </div>
     }
     else
@@ -102,21 +125,48 @@
 
                     <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
                     <p class="fs-1 fw-bold pb-lg-5">Current session: @Model.CurrentSession.Name</p>
-                    
-                    <ul>
-                        @if (Model.SessionUser != null && Model.SessionUser.Users != null)
-                        {
-                            foreach (var user in Model.SessionUser?.Users)
-                            {
-                                <li>@user.Name</li>
-                            }
-                        }
-                    </ul>
+
+                    <div class="row">
+                        <div class="col p-5">
+                            <p class="fs-2 fw-bold pb-lg-5">Avengers</p>
+                            <ul class="list-group">
+                                @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                                {
+                                    foreach (var user in Model.SessionUser?.Avengers())
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            @user.Name
+                                            <span class="badge bg-primary rounded-pill">14</span>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                        <div class="col p-5">
+                            <p class="fs-2 fw-bold pb-lg-5">Justice League</p>
+                            <ul class="list-group">
+                                @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                                {
+                                    foreach (var user in Model.SessionUser?.JusticeLeague())
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            @user.Name
+                                            <span class="badge bg-primary rounded-pill">14</span>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         @section GameScripts {
+            <script>
+                var base_url = "@Model.BaseUrl";
+            </script>
+            <script src="~/js/api.js"></script>
             <script src="~/js/main.js"></script>
         }
     }

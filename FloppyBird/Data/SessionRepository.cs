@@ -17,14 +17,11 @@ namespace FloppyBird.Data
 
     public class SessionRepository : ISessionRepository
     {
-        private readonly Task<RedisConnection> _redisConnectionFactory;
-        private TimeSpan _cacheExpirationTimeSpan;
+        private readonly ICacheService _cacheService;
 
-        public SessionRepository(Task<RedisConnection> redisConnectionFactory, IOptions<RedisConfigOptions> redisConfigOptions)
+        public SessionRepository(ICacheService cacheService)
         {
-            _redisConnectionFactory = redisConnectionFactory;
-            var options = redisConfigOptions.Value;
-            _cacheExpirationTimeSpan = TimeSpan.FromHours(options.expirationInHr);
+            _cacheService = cacheService;
         }
 
         public async Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken)
@@ -36,28 +33,13 @@ namespace FloppyBird.Data
                 StartedAt = DateTime.UtcNow,
                 GameMasterAccountToken = Guid.Parse(currentUserAccountToken)
             };
-
-            var sessionJson = JsonSerializer.Serialize(session);
-
-            var redisConnection = await _redisConnectionFactory;
-            var result = await redisConnection.BasicRetryAsync(async db =>
-                    await db.StringSetAsync(session.SessionToken.ToString(), sessionJson, _cacheExpirationTimeSpan));
-
+            var result = await _cacheService.StringSetObjToCache<Session>(session.SessionToken.ToString(), session);
             return result ? session : null;
         }
 
         public async Task<Session> GetSessionbyToken(string sessionToken)
         {
-            var redisConnection = await _redisConnectionFactory;
-            RedisValue getSessionResult = await redisConnection.BasicRetryAsync(async db => await db.StringGetAsync(sessionToken));
-
-            if (getSessionResult != RedisValue.Null)
-            {
-                var sessionObj = JsonSerializer.Deserialize<Session>(getSessionResult);
-                return sessionObj;
-            }
-
-            return null;
+            return await _cacheService.StringGetObjFromCache<Session>(sessionToken);
         }
 
     }

@@ -9,6 +9,7 @@ namespace FloppyBird.Data
 {
     public interface ISessionUsersRepository
     {
+        Task<bool> AddUserScore(Guid userAccountToken, Guid sessionToken, int score);
         Task AddUserToSession(User user, Guid sessionToken);
         Task RemoveUserFromSession(Guid userAccountToken, Guid sessionToken);
         Task<SessionUser> GetSessionUserByToken(string sessionToken);
@@ -16,34 +17,34 @@ namespace FloppyBird.Data
 
     public class SessionUsersRepository : ISessionUsersRepository
     {
-        private readonly Task<RedisConnection> _redisConnectionFactory;
-        private TimeSpan _cacheExpirationTimeSpan;
+        private readonly ICacheService _cacheService;
 
-        public SessionUsersRepository(Task<RedisConnection> redisConnectionFactory, 
-                                    IOptions<RedisConfigOptions> redisConfigOptions)
+        public SessionUsersRepository(ICacheService cacheService)
         {
-            _redisConnectionFactory = redisConnectionFactory;
-            var options = redisConfigOptions.Value;
-            _cacheExpirationTimeSpan = TimeSpan.FromHours(options.expirationInHr);
+            _cacheService = cacheService;
         }
 
         private string GetToken(string sessionToken) => $"currentSessionUsers_{sessionToken}";
 
-        public async Task AssignUsersToGroup (Guid sessionToken)
+        public async Task<bool> AddUserScore(Guid userAccountToken, Guid sessionToken, int score)
         {
             var sessionUserInCache = await this.GetSessionUserByToken(sessionToken.ToString());
-            sessionUserInCache.Users.Shuffle();
+            if (sessionUserInCache == null)
+                return false;
 
-            for (int i = 0; i < sessionUserInCache.Users.Count; i++)
+            int userIndex = sessionUserInCache.Users.FindIndex(x => x.AccountToken == userAccountToken);
+            var user = sessionUserInCache.Users[userIndex];
+            if (user != null)
             {
-                if (i % 2 == 0)
-                    sessionUserInCache.Users[i].Group = Groups.Avengers;
-                else
-                    sessionUserInCache.Users[i].Group = Groups.JusticeLeague;
+                user.Scores.Add(score);
+                sessionUserInCache.Users[userIndex] = user;
+
+                var sessionUserToken = GetToken(sessionToken.ToString());
+                var saveResult = await SetSessionUserByToken(sessionUserToken, sessionUserInCache);
+                return saveResult;
             }
 
-            var sessionUserToken = GetToken(sessionToken.ToString());
-            await SetSessionUserByToken(sessionUserToken, sessionUserInCache);
+            return false;
         }
 
         public async Task AddUserToSession(User user, Guid sessionToken)
@@ -67,6 +68,20 @@ namespace FloppyBird.Data
                     return;
 
                 sessionUserInCache.Users.Add(user);
+
+                // User Groupings
+                for (int i = 0; i < sessionUserInCache.Users.Count; i++)
+                {
+                    var currentUser = sessionUserInCache.Users[i];
+                    if (currentUser.Group == Groups.NoGroup)
+                    {
+                        if (i % 2 == 0)
+                            currentUser.Group = Groups.Avengers;
+                        else
+                            currentUser.Group = Groups.JusticeLeague;
+                    }
+                }
+
                 await SetSessionUserByToken(sessionUserToken, sessionUserInCache);
             }
         }
@@ -87,27 +102,15 @@ namespace FloppyBird.Data
             }
         }
 
-        private async Task SetSessionUserByToken(string sessionUserToken, SessionUser sessionUser)
+        private async Task<bool> SetSessionUserByToken(string sessionUserToken, SessionUser sessionUser)
         {
-            var sessionUserJson = JsonSerializer.Serialize(sessionUser);
-            var redisConnection = await _redisConnectionFactory;
-            await redisConnection.BasicRetryAsync(async db =>
-                await db.StringSetAsync(sessionUserToken, sessionUserJson, _cacheExpirationTimeSpan));
+            return await _cacheService.StringSetObjToCache<SessionUser>(sessionUserToken, sessionUser);
         }
 
         public async Task<SessionUser> GetSessionUserByToken(string sessionToken)
         {
             var sessionUserToken = GetToken(sessionToken.ToString());
-            var redisConnection = await _redisConnectionFactory;
-            RedisValue getSessionUserResult = await redisConnection.BasicRetryAsync(async db => await db.StringGetAsync(sessionUserToken));
-
-            if (getSessionUserResult != RedisValue.Null)
-            {
-                var sessionUserObj = JsonSerializer.Deserialize<SessionUser>(getSessionUserResult);
-                return sessionUserObj;
-            }
-
-            return null;
+            return await _cacheService.StringGetObjFromCache<SessionUser>(sessionUserToken);
         }
     }
 }

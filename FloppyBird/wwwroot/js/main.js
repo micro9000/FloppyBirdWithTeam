@@ -374,13 +374,15 @@ function showScore()
    //remove the big score
    setBigScore(true);
 
+
+   SubmitUserScore(score);
    //have they beaten their high score?
    if(score > highscore)
    {
       //yeah!
       highscore = score;
       //save it!
-      setCookie("highscore", highscore, 999);
+       setCookie("highscore", highscore, 999);
    }
 
    //update the scoreboard

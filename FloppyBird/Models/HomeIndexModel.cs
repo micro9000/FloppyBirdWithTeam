@@ -8,5 +8,6 @@ namespace FloppyBird.Models
         public User User { get; set; }
         public Session CurrentSession { get; set; }
         public SessionUser SessionUser { get; set; }
+        public string BaseUrl { get; set; }
     }
 }

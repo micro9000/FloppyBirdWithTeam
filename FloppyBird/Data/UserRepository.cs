@@ -15,14 +15,11 @@ namespace FloppyBird.Data
 
     public class UserRepository : IUserRepository
     {
-        private readonly Task<RedisConnection> _redisConnectionFactory;
-        private TimeSpan _cacheExpirationTimeSpan;
+        private readonly ICacheService _cacheService;
 
-        public UserRepository(Task<RedisConnection> redisConnectionFactory, IOptions<RedisConfigOptions> redisConfigOptions)
+        public UserRepository(ICacheService cacheService)
         {
-            _redisConnectionFactory = redisConnectionFactory;
-            var options = redisConfigOptions.Value;
-            _cacheExpirationTimeSpan = TimeSpan.FromHours(options.expirationInHr);
+            _cacheService = cacheService;
         }
 
         public async Task<User> CreateNewUserAccount(string username)
@@ -30,30 +27,18 @@ namespace FloppyBird.Data
             var user = new User
             {
                 AccountToken = Guid.NewGuid(),
-                Name = username
+                Name = username,
+                Scores = new List<int>()
             };
 
-            var userJson = JsonSerializer.Serialize(user);
-
-            var redisConnection = await _redisConnectionFactory;
-            var result = await redisConnection.BasicRetryAsync(async db =>
-                    await db.StringSetAsync(user.AccountToken.ToString(), userJson, _cacheExpirationTimeSpan));
+            var result = await _cacheService.StringSetObjToCache<User>(user.AccountToken.ToString(), user);
 
             return result ? user : null;
         }
 
         public async Task<User> GetUserByAccountToken(string accountToken)
         {
-            var redisConnection = await _redisConnectionFactory;
-            RedisValue getUserResult = await redisConnection.BasicRetryAsync(async db => await db.StringGetAsync(accountToken));
-
-            if (getUserResult != RedisValue.Null)
-            {
-                var userObj = JsonSerializer.Deserialize<User>(getUserResult);
-                return userObj;
-            }
-
-            return null;
+            return await _cacheService.StringGetObjFromCache<User>(accountToken);
         }
     }
 }

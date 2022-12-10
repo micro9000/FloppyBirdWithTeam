@@ -40,7 +40,10 @@ namespace FloppyBird.Controllers
 
         public async Task<IActionResult> Index()
         {
-            HomeIndexModel model = new HomeIndexModel();
+            HomeIndexModel model = new HomeIndexModel
+            {
+                BaseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}"
+            };
 
             if (IsCurrentUserAccountTokenExistsInCookies())
             {
@@ -57,6 +60,23 @@ namespace FloppyBird.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveUserScore (int score)
+        {
+            if (score == 0) return new JsonResult(new { isSuccessful = false });
+
+            var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
+            var currentSessionToken = GetSessionTokenInCookies();
+
+            if (Guid.TryParse(currentUserAccountToken, out var userAccountToken) && Guid.TryParse(currentSessionToken, out var sessionToken))
+            {
+                var saveResult = await _sessionUsersRepository.AddUserScore(userAccountToken, sessionToken, score);
+                return new JsonResult(new { isSuccessful = saveResult });
+            }
+
+            return new JsonResult(new { isSuccessful = false });
         }
 
         [HttpPost]
