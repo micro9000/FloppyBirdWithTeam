@@ -1,0 +1,123 @@
+﻿@model FloppyBird.Models.HomeIndexModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container w-50 mt-lg-5">
+
+    @if (Model.User == null){
+        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="CreateNewAccount">
+            <p class="fs-1 fw-bold pb-5">Enter your name</p>
+            <input class="form-control form-control-lg" type="text" aria-label=".form-control-lg example" name="Username">
+            <button type="submit" class="btn btn-success btn-lg mt-2">Create account</button>
+        </form>
+    }
+
+    @if (Model.CurrentSession == null && Model.User != null)
+    {
+        <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
+        <div class="row align-content-center">
+            <div class="col">
+                <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="CreateNewSession">
+                    <p class="fs-1 fw-bold pb-lg-5">Create new game session</p>
+                    <input class="form-control form-control-lg mb-2" type="text" placeholder="Session name" aria-label=".form-control-lg example" name="Name">
+                    <button type="submit" class="btn btn-success btn-lg mt-2">Create</button>
+                </form>
+            </div>
+            <div class="col">
+                <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="JoinTheSession">
+                    <p class="fs-1 fw-bold pb-lg-5">Join game session</p>
+                    <input class="form-control form-control-lg" type="text" placeholder="Session token" aria-label=".form-control-lg example" name="SessionToken">
+                    <button type="submit" class="btn btn-danger btn-lg mt-2">Join</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.CurrentSession != null && Model.User != null)
+{
+    @if (Model.CurrentUserIsTheGameMaster)
+    {
+        <div class="container w-50 mt-lg-5">
+            <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
+            <p class="fs-1 fw-bold pb-lg-5">Current session: @Model.CurrentSession.Name</p>
+
+            <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="StartTheGameSession">
+                <p class="fs-2 fw-bold pb-lg-5">Session token: <input class="form-control form-control-lg" value="@Model.CurrentSession.SessionToken" /></p>
+                <button type="submit" class="btn btn-success btn-lg">Start the session</button>
+            </form>
+
+            <ul>
+                @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                {
+                    foreach (var user in Model.SessionUser?.Users)
+                    {
+                        <li>@user.Name</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <div class="row flex-grow-1">
+            <div class="col-8">
+                <div id="gamecontainer">
+                    <div id="gamescreen">
+                        <div id="sky" class="animated">
+                            <div id="flyarea">
+                                <div id="ceiling" class="animated"></div>
+                                <!-- This is the flying and pipe area container -->
+                                <div id="player" class="bird animated"></div>
+
+                                <div id="bigscore"></div>
+
+                                <div id="splash"></div>
+
+                                <div id="scoreboard">
+                                    <div id="medal"></div>
+                                    <div id="currentscore"></div>
+                                    <div id="highscore"></div>
+                                    <div id="replay">
+                                        <img src="assets/replay.png" alt="replay" />
+                                    </div>
+                                </div>
+
+                                <!-- Pipes go here! -->
+                            </div>
+                        </div>
+                        <div id="land" class="animated">
+                            <div id="debug"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="row align-content-center">
+
+                    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="LeaveTheSession">
+                        <button type="submit" class="btn btn-danger btn-lg">Exit</button>
+                    </form>
+
+                    <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
+                    <p class="fs-1 fw-bold pb-lg-5">Current session: @Model.CurrentSession.Name</p>
+                    
+                    <ul>
+                        @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                        {
+                            foreach (var user in Model.SessionUser?.Users)
+                            {
+                                <li>@user.Name</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @section GameScripts {
+            <script src="~/js/main.js"></script>
+        }
+    }
+}

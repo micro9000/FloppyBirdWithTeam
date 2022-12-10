@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="Nebez Briefkani" />
+    <meta
+      name="description"
+      content="play floppy bird. a remake of popular game flappy bird built in html/css/js"
+    />
+    <meta
+      name="keywords"
+      content="flappybird,flappy,bird,floppybird,floppy,html,html5,css,css3,js,javascript,jquery,github,nebez,briefkani,nebezb,open,source,opensource"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="Floppy Bird" />
+    <meta
+      property="og:description"
+      content="play floppy bird. a remake of popular game flappy bird built in html/css/js"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://nebezb.com/floppybird/assets/thumb.png"
+    />
+    <meta property="og:url" content="https://nebezb.com/floppybird/" />
+    <meta property="og:site_name" content="Floppy Bird" />
+
+    <title>@ViewData["Title"] - FloppyBird</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/FloppyBird.styles.css" asp-append-version="true" />
+
+    <!-- Style sheets -->
+    <link href="~/css/reset.css" rel="stylesheet" />
+    <link href="~/css/main.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FloppyBird</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container-fluid min-vh-100 d-flex flex-column">
+        @RenderBody()
+    </div>
+
+    <div class="boundingbox" id="playerbox"></div>
+    <div class="boundingbox" id="pipebox"></div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <a href="https://www.dotgears.com/">original game/concept/art by dong nguyen</a>
+            <a href="https://nebezb.com/">recreated by nebez briefkani</a>
+            <a href="https://github.com/nebez/floppybird/">view github project</a>
+            &copy; 2022 - FloppyBird - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/jquery/jquery.transit.min.js"></script>
+    <script src="~/lib/jquery/buzz.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("GameScripts", required: false)
+    <script>
+        function inIframe() {
+            try {
+                return window.self !== window.top;
+            } catch (e) {
+                return true;
+            }
+        }
+        if (!inIframe() && window.location.hostname == 'nebezb.com') {
+            window.ga =
+                window.ga ||
+                function () {
+                    (ga.q = ga.q || []).push(arguments);
+                };
+            ga.l = +new Date();
+            ga('create', 'UA-48047334-1', 'auto');
+            ga('send', 'pageview');
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
