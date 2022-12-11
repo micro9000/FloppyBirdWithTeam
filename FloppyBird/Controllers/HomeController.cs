@@ -1,9 +1,9 @@
-﻿using FloppyBird.Cache;
-using FloppyBird.Data;
+﻿using FloppyBird.Data;
 using FloppyBird.Dtos;
+using FloppyBird.Hubs;
 using FloppyBird.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 
@@ -15,7 +15,7 @@ namespace FloppyBird.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ISessionRepository _sessionRepository;
         private readonly ISessionUsersRepository _sessionUsersRepository;
-
+        private readonly IHubContext<ChatHub> _chatHub;
         private const string sessionTokenCookieKey = "currentSessionToken";
         private const string userTokenCookieKey = "currentUserToken";
         private readonly CookieOptions cookieOption;
@@ -24,14 +24,15 @@ namespace FloppyBird.Controllers
                             IOptions<RedisConfigOptions> redisConfigOptions,
                             IUserRepository userRepository,
                             ISessionRepository sessionRepository,
-                            ISessionUsersRepository sessionUsersRepository)
+                            ISessionUsersRepository sessionUsersRepository,
+                            IHubContext<ChatHub> chatHub)
         {
             _logger = logger;
             var redisConfig = redisConfigOptions.Value;
             _userRepository = userRepository;
             _sessionRepository = sessionRepository;
-            _sessionUsersRepository = sessionUsersRepository; 
-            
+            _sessionUsersRepository = sessionUsersRepository;
+            _chatHub = chatHub;
             cookieOption = new CookieOptions
             {
                 Expires = DateTime.Now.AddHours(redisConfig.expirationInHr)
@@ -62,7 +63,7 @@ namespace FloppyBird.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Chat()
+        public IActionResult Chat()
         {
             return View();
         }
@@ -159,7 +160,6 @@ namespace FloppyBird.Controllers
 
             return RedirectToAction("Index");
         }
-
 
         private bool IsSessionTokenExistsInCookies() => Request.Cookies.ContainsKey(sessionTokenCookieKey);
         private void SetSessionTokenInCookies(string SessionToken) => Response.Cookies.Append(sessionTokenCookieKey, SessionToken, cookieOption);

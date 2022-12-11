@@ -7,10 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+//https://learn.microsoft.com/en-us/aspnet/core/signalr/redis-backplane?view=aspnetcore-7.0
+
 builder.Services.AddSignalR(config =>
 {
     config.EnableDetailedErrors = true;
 });
+// Add below code to use Azure SignalR service
+// Install Microsoft.Azure.SignalR package
+// .AddAzureSignalR(connString)
+// Below: replace the app.UseStaticFiles() to app.UseFileServer()
 
 builder.Services.Configure<RedisConfigOptions>(builder.Configuration.GetSection(nameof(RedisConfigOptions)));
 builder.Services.AddSingleton(async x => await RedisConnection.InitializeAsync(connectionString: builder.Configuration.GetConnectionString("RedisCacheConnString")));
