@@ -62,6 +62,11 @@ namespace FloppyBird.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> Chat()
+        {
+            return View();
+        }
+
         [HttpPost]
         public async Task<JsonResult> SaveUserScore (int score)
         {

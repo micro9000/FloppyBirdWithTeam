@@ -1,11 +1,17 @@
 using FloppyBird;
 using FloppyBird.Cache;
 using FloppyBird.Data;
+using FloppyBird.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR(config =>
+{
+    config.EnableDetailedErrors = true;
+});
+
 builder.Services.Configure<RedisConfigOptions>(builder.Configuration.GetSection(nameof(RedisConfigOptions)));
 builder.Services.AddSingleton(async x => await RedisConnection.InitializeAsync(connectionString: builder.Configuration.GetConnectionString("RedisCacheConnString")));
 
@@ -30,6 +36,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chathub");
 
 app.MapControllerRoute(
     name: "default",
