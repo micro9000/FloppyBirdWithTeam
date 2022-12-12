@@ -24,7 +24,6 @@ builder.Services.AddSingleton(async x => await RedisConnection.InitializeAsync(c
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISessionRepository, SessionRepository>();
-builder.Services.AddScoped<ISessionUsersRepository, SessionUsersRepository>();
 
 var app = builder.Build();
 

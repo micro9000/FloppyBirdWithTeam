@@ -2,9 +2,9 @@
 
 @{
     var currentUserGroup = Groups.NoGroup;
-    if (Model.SessionUser != null && Model.SessionUser.Users != null)
+    if (Model.SessionScoreCard != null && Model.SessionScoreCard.Users != null)
     {
-        var currentUserInfoInTheSession = Model.SessionUser?.Users?.FirstOrDefault(x => x.AccountToken == Model.User.AccountToken);
+        var currentUserInfoInTheSession = Model.SessionScoreCard?.Users?.FirstOrDefault(x => x.AccountToken == Model.User.AccountToken);
         if (currentUserInfoInTheSession != null)
             currentUserGroup = currentUserInfoInTheSession.Group;
     }
@@ -13,9 +13,9 @@
 <div class="row">
     <div class="col p-2 @(currentUserGroup == Groups.Avengers ? "bg-success p-2 text-dark bg-opacity-10" : "")">
         <p class="fs-2 fw-bold pb-lg-5">Avengers</p>
-        <p class="fs-3 fw-bold pb-lg-5">Overall score: @Model.SessionUser.AvengersOverallScore()</p>
+        <p class="fs-3 fw-bold pb-lg-5">Overall score: @Model.SessionScoreCard.AvengersOverallScore()</p>
         <ul class="list-group">
-            @foreach (var user in Model.SessionUser.Avengers())
+            @foreach (var user in Model.SessionScoreCard.Avengers())
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     @user.Name
@@ -26,9 +26,9 @@
     </div>
     <div class="col p-2">
         <p class="fs-2 fw-bold pb-lg-5">Justice League</p>
-        <p class="fs-3 fw-bold pb-lg-5">Overall score: @Model.SessionUser.JusticeLeagueOverallScore()</p>
+        <p class="fs-3 fw-bold pb-lg-5">Overall score: @Model.SessionScoreCard.JusticeLeagueOverallScore()</p>
         <ul class="list-group">
-            @foreach (var user in Model.SessionUser.JusticeLeague())
+            @foreach (var user in Model.SessionScoreCard.JusticeLeague())
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     @user.Name

@@ -7,12 +7,12 @@ namespace FloppyBird.Hubs
     public class GameSessionHub : Hub
     {
         private readonly IUserRepository _userRepository;
-        private readonly ISessionUsersRepository _sessionUsersRepository;
+        private readonly ISessionRepository _sessionRepository;
 
-        public GameSessionHub(IUserRepository userRepository, ISessionUsersRepository sessionUsersRepository)
+        public GameSessionHub(IUserRepository userRepository, ISessionRepository sessionRepository)
         {
             _userRepository = userRepository;
-            _sessionUsersRepository = sessionUsersRepository;
+            _sessionRepository = sessionRepository;
         }
 
         public async Task AddUserToSession(string sessionToken, string userAccountToken)
@@ -30,11 +30,11 @@ namespace FloppyBird.Hubs
             if (Guid.TryParse(scoreInfo.UserAccountToken, out var currentUserAccountToken) 
                 && Guid.TryParse(scoreInfo.SessionToken, out var currentSessionToken))
             {
-                var saveResult = await _sessionUsersRepository.AddUserScore(currentUserAccountToken, currentSessionToken, scoreInfo.Score);
+                var saveResult = await _sessionRepository.AddUserScore(currentUserAccountToken, currentSessionToken, scoreInfo.Score);
 
                 if (saveResult)
                 {
-                    var sessionUser = await _sessionUsersRepository.GetSessionUserByToken(currentSessionToken.ToString());
+                    var sessionUser = await _sessionRepository.GetSessionbyToken(currentSessionToken.ToString());
                     await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", sessionUser);
                 }
             }

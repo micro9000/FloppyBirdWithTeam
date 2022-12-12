@@ -51,9 +51,9 @@
                 <button type="submit" class="btn btn-success btn-lg">Start the session</button>
             </form>
 
-            @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+            @if (Model.SessionScoreCard != null && Model.SessionScoreCard.Users != null)
             {
-                @(await Html.PartialAsync("_SessionUsers.cshtml", Model));
+                @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
             }
         </div>
 
@@ -81,9 +81,9 @@
                     <p class="fs-1 fw-bold pb-lg-5">User: @Model.User.Name</p>
                     <p class="fs-1 fw-bold pb-lg-5">Current session: @Model.CurrentSession.Name</p>
 
-                    @if (Model.SessionUser != null && Model.SessionUser.Users != null)
+                    @if (Model.SessionScoreCard != null && Model.SessionScoreCard.Users != null)
                     {
-                        @(await Html.PartialAsync("_SessionUsers.cshtml", Model));
+                        @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
                     }
                 </div>
             </div>

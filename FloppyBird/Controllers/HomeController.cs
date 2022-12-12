@@ -14,7 +14,6 @@ namespace FloppyBird.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IUserRepository _userRepository;
         private readonly ISessionRepository _sessionRepository;
-        private readonly ISessionUsersRepository _sessionUsersRepository;
         private readonly IHubContext<GameSessionHub> _gameSessionhubContext;
         private const string sessionTokenCookieKey = "currentSessionToken";
         private const string userTokenCookieKey = "currentUserToken";
@@ -24,14 +23,12 @@ namespace FloppyBird.Controllers
                             IOptions<RedisConfigOptions> redisConfigOptions,
                             IUserRepository userRepository,
                             ISessionRepository sessionRepository,
-                            ISessionUsersRepository sessionUsersRepository,
                             IHubContext<GameSessionHub> gameSessionhubContext)
         {
             _logger = logger;
             var redisConfig = redisConfigOptions.Value;
             _userRepository = userRepository;
             _sessionRepository = sessionRepository;
-            _sessionUsersRepository = sessionUsersRepository;
             _gameSessionhubContext = gameSessionhubContext;
             cookieOption = new CookieOptions
             {
@@ -57,7 +54,7 @@ namespace FloppyBird.Controllers
                 var currentSessionToken = GetSessionTokenInCookies();
                 model.CurrentSession = await _sessionRepository.GetSessionbyToken(currentSessionToken);
                 model.CurrentUserIsTheGameMaster = model.CurrentSession?.GameMasterAccountToken == model.User?.AccountToken;
-                model.SessionUser = await _sessionUsersRepository.GetSessionUserByToken(currentSessionToken);
+                model.SessionScoreCard = new DomainModels.SessionScorecard(model.CurrentSession.Users);
             }
 
             return View(model);
@@ -78,7 +75,7 @@ namespace FloppyBird.Controllers
 
             if (Guid.TryParse(currentUserAccountToken, out var userAccountToken) && Guid.TryParse(currentSessionToken, out var sessionToken))
             {
-                var saveResult = await _sessionUsersRepository.AddUserScore(userAccountToken, sessionToken, score);
+                var saveResult = await _sessionRepository.AddUserScore(userAccountToken, sessionToken, score);
                 return new JsonResult(new { isSuccessful = saveResult });
             }
 
@@ -104,7 +101,7 @@ namespace FloppyBird.Controllers
             var userObj = await _userRepository.GetUserByAccountToken(currentUserAccountToken);
 
             SetSessionTokenInCookies(sessionToken);
-            await _sessionUsersRepository.AddUserToSession(userObj, sessionTokenGuid);
+            await _sessionRepository.AddUserToSession(userObj, sessionTokenGuid);
 
             await _gameSessionhubContext.Clients.Group(sessionToken).SendAsync("UserHasJoinedTheSession", $"{userObj.Name} has joined the session");
 
@@ -119,7 +116,7 @@ namespace FloppyBird.Controllers
 
             if (Guid.TryParse(currentUserAccountToken, out var userAccountToken) && Guid.TryParse(currentSessionToken, out var sessionToken))
             {
-                await _sessionUsersRepository.RemoveUserFromSession(userAccountToken, sessionToken);
+                await _sessionRepository.RemoveUserFromSession(userAccountToken, sessionToken);
                 DeleteCurrentUserAccountTokenInCookies();
                 DeleteSessionTokenInCookies();
             }

@@ -7,7 +7,7 @@ namespace FloppyBird.Models
         public bool CurrentUserIsTheGameMaster { get; set; }
         public User User { get; set; }
         public Session CurrentSession { get; set; }
-        public SessionUser SessionUser { get; set; }
+        public SessionScorecard SessionScoreCard { get; set; }
         public string BaseUrl { get; set; }
     }
 }
