@@ -1,4 +1,5 @@
 ﻿using FloppyBird.Data;
+using FloppyBird.DomainModels;
 using FloppyBird.Dtos;
 using FloppyBird.Hubs;
 using FloppyBird.Models;
@@ -60,11 +61,6 @@ namespace FloppyBird.Controllers
             return View(model);
         }
 
-        public IActionResult Chat()
-        {
-            return View();
-        }
-
         [HttpPost]
         public async Task<JsonResult> SaveUserScore (int score)
         {
@@ -103,6 +99,9 @@ namespace FloppyBird.Controllers
             SetSessionTokenInCookies(sessionToken);
             await _sessionRepository.AddUserToSession(userObj, sessionTokenGuid);
 
+            var sessionUser = await _sessionRepository.GetSessionbyToken(sessionToken);
+            var scoreBoard = new SessionScorecard(sessionUser?.Users);
+            await _gameSessionhubContext.Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
             await _gameSessionhubContext.Clients.Group(sessionToken).SendAsync("UserHasJoinedTheSession", $"{userObj.Name} has joined the session");
 
             return RedirectToAction("Index");
