@@ -43,11 +43,13 @@ namespace FloppyBird.Data
 
         public async Task<bool> AddUserToSession(User user, Guid sessionToken)
         {
+            if (user == null) return false;
             string sessionTokenStr = sessionToken.ToString();
             var sessionInCache = await GetSessionbyToken(sessionTokenStr);
 
             if (sessionInCache.Users.Count == 0)
             {
+                user.Group = Groups.Avengers;
                 sessionInCache.Users = new List<User> { user };
                 var result = await SetSessionInCache(sessionTokenStr, sessionInCache);
                 return result;

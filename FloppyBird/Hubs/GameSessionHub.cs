@@ -1,4 +1,5 @@
 ﻿using FloppyBird.Data;
+using FloppyBird.DomainModels;
 using Microsoft.AspNetCore.SignalR;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -35,7 +36,8 @@ namespace FloppyBird.Hubs
                 if (saveResult)
                 {
                     var sessionUser = await _sessionRepository.GetSessionbyToken(currentSessionToken.ToString());
-                    await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", sessionUser);
+                    var scoreBoard = new SessionScorecard(sessionUser?.Users);
+                    await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
                 }
             }
         }
