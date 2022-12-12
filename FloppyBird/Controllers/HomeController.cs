@@ -15,7 +15,7 @@ namespace FloppyBird.Controllers
         private readonly IUserRepository _userRepository;
         private readonly ISessionRepository _sessionRepository;
         private readonly ISessionUsersRepository _sessionUsersRepository;
-        private readonly IHubContext<ChatHub> _chatHub;
+        private readonly IHubContext<GameSessionHub> _gameSessionhubContext;
         private const string sessionTokenCookieKey = "currentSessionToken";
         private const string userTokenCookieKey = "currentUserToken";
         private readonly CookieOptions cookieOption;
@@ -25,14 +25,14 @@ namespace FloppyBird.Controllers
                             IUserRepository userRepository,
                             ISessionRepository sessionRepository,
                             ISessionUsersRepository sessionUsersRepository,
-                            IHubContext<ChatHub> chatHub)
+                            IHubContext<GameSessionHub> gameSessionhubContext)
         {
             _logger = logger;
             var redisConfig = redisConfigOptions.Value;
             _userRepository = userRepository;
             _sessionRepository = sessionRepository;
             _sessionUsersRepository = sessionUsersRepository;
-            _chatHub = chatHub;
+            _gameSessionhubContext = gameSessionhubContext;
             cookieOption = new CookieOptions
             {
                 Expires = DateTime.Now.AddHours(redisConfig.expirationInHr)
@@ -105,6 +105,8 @@ namespace FloppyBird.Controllers
 
             SetSessionTokenInCookies(sessionToken);
             await _sessionUsersRepository.AddUserToSession(userObj, sessionTokenGuid);
+
+            await _gameSessionhubContext.Clients.Group(sessionToken).SendAsync("UserHasJoinedTheSession", $"{userObj.Name} has joined the session");
 
             return RedirectToAction("Index");
         }
