@@ -4,6 +4,7 @@
     {
         public Guid AccountToken { get; set; }
         public string Name { get; set; }
+        public string HubConnectionId { get; set; }
         public List<int> Scores { get; set; }
         public int HighScore { get
             {

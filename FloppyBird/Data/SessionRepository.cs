@@ -11,6 +11,7 @@ namespace FloppyBird.Data
 {
     public interface ISessionRepository
     {
+        Task<bool> StartTheSession(Guid sessionToken);
         Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken);
         Task<Session> GetSessionbyToken(string sessionToken);
         Task<bool> AddUserToSession(User user, Guid sessionToken);
@@ -27,13 +28,23 @@ namespace FloppyBird.Data
             _cacheService = cacheService;
         }
 
+        public async Task<bool> StartTheSession(Guid sessionToken)
+        {
+            var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
+            if (sessionInCache == null)
+                return false;
+            sessionInCache.StartedAt = DateTime.UtcNow;
+            sessionInCache.IsStarted = true;
+            return await SetSessionInCache(sessionToken.ToString(), sessionInCache);
+        }
+
         public async Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken)
         {
             var session = new Session
             {
                 SessionToken = Guid.NewGuid(),
                 Name = createNewSessionParams.Name,
-                StartedAt = DateTime.UtcNow,
+                IsStarted = false,
                 GameMasterAccountToken = Guid.Parse(currentUserAccountToken)
             };
 
@@ -97,6 +108,9 @@ namespace FloppyBird.Data
         {
             var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
             if (sessionInCache == null)
+                return false;
+
+            if (!sessionInCache.IsStarted)
                 return false;
 
             int userIndex = sessionInCache.Users.FindIndex(x => x.AccountToken == userAccountToken);

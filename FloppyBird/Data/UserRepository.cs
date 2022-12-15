@@ -11,6 +11,7 @@ namespace FloppyBird.Data
     {
         Task<User> CreateNewUserAccount(string username);
         Task<User> GetUserByAccountToken(string accountToken);
+        Task UpdateUserHubConnectionId(string accountToken, string hubConnectionId);
     }
 
     public class UserRepository : IUserRepository
@@ -28,12 +29,28 @@ namespace FloppyBird.Data
             {
                 AccountToken = Guid.NewGuid(),
                 Name = username,
-                Scores = new List<int>()
+                Scores = new List<int>(),
+                HubConnectionId = ""
             };
 
-            var result = await _cacheService.StringSetObjToCache<User>(user.AccountToken.ToString(), user);
+            var result = await this.SetUserInCache(user.AccountToken.ToString(), user);
 
             return result ? user : null;
+        }
+
+        public async Task UpdateUserHubConnectionId (string accountToken, string hubConnectionId)
+        {
+            var userInfo = await this.GetUserByAccountToken(accountToken);
+            if (userInfo != null)
+            {
+                userInfo.HubConnectionId = hubConnectionId;
+                await this.SetUserInCache(accountToken, userInfo);
+            }
+        }
+
+        private async Task<bool> SetUserInCache(string accountToken, User user)
+        {
+            return await _cacheService.StringSetObjToCache<User>(accountToken, user);
         }
 
         public async Task<User> GetUserByAccountToken(string accountToken)

@@ -20,9 +20,11 @@ namespace FloppyBird.Hubs
         {
             if (Guid.TryParse(userAccountToken, out var currentUserAccountToken) && Guid.TryParse(sessionToken, out var currentSessionToken))
             {
-                var userInfo = await _userRepository.GetUserByAccountToken(userAccountToken);
+                var userInfo = await _userRepository.GetUserByAccountToken(currentUserAccountToken.ToString());
                 if (userInfo == null) return;
-                await Groups.AddToGroupAsync(Context.ConnectionId, sessionToken);
+                string hubConnectionId = Context.ConnectionId;
+                await _userRepository.UpdateUserHubConnectionId(userAccountToken, hubConnectionId);
+                await Groups.AddToGroupAsync(hubConnectionId, currentSessionToken.ToString());
             }
         }
 
@@ -35,9 +37,12 @@ namespace FloppyBird.Hubs
 
                 if (saveResult)
                 {
-                    var sessionUser = await _sessionRepository.GetSessionbyToken(currentSessionToken.ToString());
-                    var scoreBoard = new SessionScorecard(sessionUser?.Users);
-                    await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
+                    var session = await _sessionRepository.GetSessionbyToken(currentSessionToken.ToString());
+                    if (session.IsStarted)
+                    {
+                        var scoreBoard = new SessionScorecard(session?.Users);
+                        await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
+                    }
                 }
             }
         }

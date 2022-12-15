@@ -10,31 +10,61 @@
     }
 }
 
-<div class="row">
-    <div class="col p-2 @(currentUserGroup == Groups.Avengers ? "bg-success p-2 text-dark bg-opacity-10" : "")">
-        <p class="fs-2 fw-bold pb-lg-5">Avengers</p>
-        <p class="fs-3 fw-bold pb-lg-5">Overall score: <span id="avengers-scores">@Model.SessionScoreCard.AvengersOverallScore</span></p>
-        <ul class="list-group" id="list-group-avengers">
-            @foreach (var user in Model.SessionScoreCard.Avengers)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    @user.Name
-                    <span class="badge bg-primary rounded-pill">@user.HighScore</span>
-                </li>
-            }
-        </ul>
+@if (Model.SessionScoreCard != null && Model.SessionScoreCard.Users != null)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="p-2">
+                    <h4 class="p-2 @(currentUserGroup == Groups.Avengers ? "bg-success text-dark bg-opacity-10" : "")">Avengers</h4>
+                    <h3>Overall score: <span id="avengers-scores">@Model.SessionScoreCard.AvengersOverallScore</span></h3>
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Name</th>
+                          <th scope="col">Score</th>
+                        </tr>
+                      </thead>
+                        <tbody id="list-group-avengers">
+                        @foreach (var user in Model.SessionScoreCard.Avengers)
+                        {
+                            <tr>
+                                <th scope="row">@(Model.SessionScoreCard.Avengers.IndexOf(user) + 1)</th>
+                                <td>@user.Name</td>
+                                <td>@user.HighScore</td>
+                            </tr>
+                        }
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col">
+                <div class="p-2">
+                    <h4 class="p-2 @(currentUserGroup == Groups.JusticeLeague ? "bg-success text-dark bg-opacity-10" : "")">Justice League</h4>
+                    <h3>Overall score: <span id="justiceleave-scores">@Model.SessionScoreCard.JusticeLeagueOverallScore</span></h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-group-justiceleague">
+                            @foreach (var user in Model.SessionScoreCard.JusticeLeague)
+                            {
+                                <tr>
+                                    <th scope="row">@(Model.SessionScoreCard.JusticeLeague.IndexOf(user) + 1)</th>
+                                    <td>@user.Name</td>
+                                    <td>@user.HighScore</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col p-2">
-        <p class="fs-2 fw-bold pb-lg-5">Justice League</p>
-        <p class="fs-3 fw-bold pb-lg-5">Overall score: <span id="justiceleave-scores">@Model.SessionScoreCard.JusticeLeagueOverallScore</span></p>
-        <ul class="list-group" id="list-group-justiceleague">
-            @foreach (var user in Model.SessionScoreCard.JusticeLeague)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    @user.Name
-                    <span class="badge bg-primary rounded-pill">@user.HighScore</span>
-                </li>
-            }
-        </ul>
-    </div>
-</div>
+}
+
