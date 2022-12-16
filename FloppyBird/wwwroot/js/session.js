@@ -12,6 +12,47 @@ let gameSessionConnection = new signalR.HubConnectionBuilder()
     .withAutomaticReconnect()
     .build();
 
+async function StartTimer() {
+    let currentSessionToken = getCookie("currentSessionToken");
+    gameSessionConnection.stream("StartTimer", currentSessionToken)
+        .subscribe({
+            next: (item) => {
+                $("#timer").html(item);
+                console.log(item);
+            },
+            complete: () => {
+                console.log("Stream completed");
+            },
+            error: (err) => {
+                console.log(err);
+            },
+        });
+}
+
+async function start() {
+    try {
+        await gameSessionConnection.start();
+        console.assert(gameSessionConnection.state === signalR.HubConnectionState.Connected);
+        console.log("SignalR Connected.");
+        $("#gameSessionConnectionStatus").html("Connected!");
+
+        let currentSessionToken = getCookie("currentSessionToken");
+        let currentUserToken = getCookie("currentUserToken");
+
+        gameSessionConnection.invoke("AddUserToSession", currentSessionToken, currentUserToken).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        if (isTheGameStarted) {
+            StartTimer();
+        }
+    } catch (err) {
+        console.assert(gameSessionConnection.state === signalR.HubConnectionState.Disconnected);
+        console.log(err);
+        setTimeout(() => start(), 5000);
+    }
+};
+
 gameSessionConnection.on("UserHasJoinedTheSession", function (message) {
     $.notify(message, "success");
 });
@@ -21,7 +62,13 @@ gameSessionConnection.on("UserHasLeftTheSession", function (message) {
 });
 
 gameSessionConnection.on("GameSessionHasBeenStarted", function (message) {
-    $("#gameStatus").html(message);
+    $("#gameStatus").html(message).removeClass("bg-warning").addClass("bg-success text-white");
+    StartTimer();
+    isTheGameStarted = true;
+});
+
+gameSessionConnection.on("GameSessionHasBeenEnded", function (message) {
+    $("#gameStatus").html(message).removeClass("bg-success text-white").addClass("bg-info");
 });
 
 gameSessionConnection.on("ScoreboardUpdated", function (scoreboard) {
@@ -51,7 +98,6 @@ gameSessionConnection.on("ScoreboardUpdated", function (scoreboard) {
                         </tr>`
     });
     $("#list-group-justiceleague").html(justiceleagueUsers);
-
 });
 
 gameSessionConnection.onreconnecting(error => {
@@ -66,29 +112,6 @@ gameSessionConnection.onreconnected(connectionId => {
     $("#gameSessionConnectionStatus").html("Connection reestablished. Connected with connectionId");
 });
 
-
-async function start() {
-    try {
-        await gameSessionConnection.start();
-        console.assert(gameSessionConnection.state === signalR.HubConnectionState.Connected);
-        console.log("SignalR Connected.");
-        $("#gameSessionConnectionStatus").html("Connected!");
-
-        let currentSessionToken = getCookie("currentSessionToken");
-        let currentUserToken = getCookie("currentUserToken");
-
-        gameSessionConnection.invoke("AddUserToSession", currentSessionToken, currentUserToken).catch(function (err) {
-            return console.error(err.toString());
-        });
-    } catch (err) {
-        console.assert(connection.state === signalR.HubConnectionState.Disconnected);
-        console.log(err);
-        setTimeout(() => start(), 5000);
-    }
-};
-
-start();
-
 gameSessionConnection.onclose(error => {
     start();
     console.assert(gameSessionConnection.state === signalR.HubConnectionState.Disconnected);
@@ -96,6 +119,7 @@ gameSessionConnection.onclose(error => {
     $("#gameSessionConnectionStatus").html("Connection closed due to error. Try refreshing this page to restart the connection.");
 });
 
+start();
 
 function SubmitUserScore(score) {
     if (score == 0 || !isTheGameStarted) return;

@@ -11,7 +11,8 @@ namespace FloppyBird.Data
 {
     public interface ISessionRepository
     {
-        Task<bool> StartTheSession(Guid sessionToken);
+        Task<bool> EndTheSession (Guid sessionToken);
+		Task<bool> StartTheSession(Guid sessionToken);
         Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken);
         Task<Session> GetSessionbyToken(string sessionToken);
         Task<bool> AddUserToSession(User user, Guid sessionToken);
@@ -33,18 +34,28 @@ namespace FloppyBird.Data
             var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
             if (sessionInCache == null)
                 return false;
-            sessionInCache.StartedAt = DateTime.UtcNow;
+            sessionInCache.StartedAt = DateTime.Now;
             sessionInCache.IsStarted = true;
             return await SetSessionInCache(sessionToken.ToString(), sessionInCache);
         }
 
-        public async Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken)
+		public async Task<bool> EndTheSession (Guid sessionToken)
+		{
+			var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
+			if (sessionInCache == null)
+				return false;
+			sessionInCache.IsEnded = true;
+			return await SetSessionInCache(sessionToken.ToString(), sessionInCache);
+		}
+
+		public async Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken)
         {
             var session = new Session
             {
                 SessionToken = Guid.NewGuid(),
                 Name = createNewSessionParams.Name,
                 IsStarted = false,
+                IsEnded = false,
                 GameMasterAccountToken = Guid.Parse(currentUserAccountToken)
             };
 
@@ -104,30 +115,30 @@ namespace FloppyBird.Data
             }
         }
 
-        public async Task<bool> AddUserScore(Guid userAccountToken, Guid sessionToken, int score)
-        {
-            var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
-            if (sessionInCache == null)
-                return false;
+		public async Task<bool> AddUserScore (Guid userAccountToken, Guid sessionToken, int score)
+		{
+			var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
+			if (sessionInCache == null)
+				return false;
 
-            if (!sessionInCache.IsStarted)
-                return false;
+			if (!sessionInCache.IsStarted)
+				return false;
 
-            int userIndex = sessionInCache.Users.FindIndex(x => x.AccountToken == userAccountToken);
-            var user = sessionInCache.Users[userIndex];
-            if (user != null)
-            {
-                user.Scores.Add(score);
-                sessionInCache.Users[userIndex] = user;
+			int userIndex = sessionInCache.Users.FindIndex(x => x.AccountToken == userAccountToken);
+			var user = sessionInCache.Users[userIndex];
+			if (user != null)
+			{
+				user.Scores.Add(score);
+				sessionInCache.Users[userIndex] = user;
 
-                var saveResult = await SetSessionInCache(sessionToken.ToString(), sessionInCache);
-                return saveResult;
-            }
+				var saveResult = await SetSessionInCache(sessionToken.ToString(), sessionInCache);
+				return saveResult;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        private async Task<bool> SetSessionInCache(string sessionToken, Session session)
+		private async Task<bool> SetSessionInCache(string sessionToken, Session session)
         {
             return await _cacheService.StringSetObjToCache<Session>(sessionToken, session);
         }

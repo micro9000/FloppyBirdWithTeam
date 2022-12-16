@@ -1,6 +1,9 @@
 ﻿using FloppyBird.Data;
 using FloppyBird.DomainModels;
 using Microsoft.AspNetCore.SignalR;
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace FloppyBird.Hubs
@@ -38,7 +41,7 @@ namespace FloppyBird.Hubs
                 if (saveResult)
                 {
                     var session = await _sessionRepository.GetSessionbyToken(currentSessionToken.ToString());
-                    if (session.IsStarted)
+                    if (session.IsStarted && !session.IsEnded)
                     {
                         var scoreBoard = new SessionScorecard(session?.Users);
                         await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
@@ -46,6 +49,61 @@ namespace FloppyBird.Hubs
                 }
             }
         }
+
+        public ChannelReader<string> StartTimer (string sessionToken, CancellationToken cancellationToken)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+            if (Guid.TryParse(sessionToken, out var currentSessionToken))
+            {
+                _ = WriteItemsAsync(channel.Writer, currentSessionToken.ToString(), cancellationToken);
+            }
+            return channel.Reader;
+        }
+
+        private async Task WriteItemsAsync (ChannelWriter<string> writer, string sessionToken, CancellationToken cancellationToken)
+        {
+            Exception localException = null;
+            try
+            {
+                var session = await _sessionRepository.GetSessionbyToken(sessionToken);
+                if (session.IsStarted)
+                {
+                    DateTime startDate = session.StartedAt;
+                    DateTime endDate = startDate.AddMinutes(2);
+
+                    TimeSpan timeRange = endDate - startDate;
+                    while (DateTime.Now < endDate)
+                    {
+                        TimeSpan timeSpan = DateTime.Now - startDate;
+                        TimeSpan remaining = timeRange.Subtract(timeSpan);
+                        var result = string.Format("{0:D2}:{1:D2}", (int)remaining.TotalMinutes, remaining.Seconds);
+                        await writer.WriteAsync(result, cancellationToken);
+                        await Task.Delay(1000, cancellationToken);
+
+                        if ((int)remaining.TotalMinutes == 0 && remaining.Seconds == 0)
+                        {
+                            var isDone = await _sessionRepository.EndTheSession(Guid.Parse(sessionToken));
+                            if (isDone)
+							              {
+								                var scoreBoard = new SessionScorecard(session?.Users);
+								                await Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
+								                await Clients.Group(sessionToken).SendAsync("GameSessionHasBeenEnded", "Finished");
+							              }
+						              }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                localException = ex;
+            }
+            finally
+            {
+                writer.Complete(localException);
+            }
+        }
+
     }
 
     public class SaveUserScoreParams

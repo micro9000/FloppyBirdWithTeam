@@ -75,28 +75,11 @@ namespace FloppyBird.Controllers
                 if (isStartedSuccessfully)
                 {
                     await SendScoreboardUpdates(sessionToken);
-                    await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("GameSessionHasBeenStarted", "The game has been started");
+                    await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("GameSessionHasBeenStarted", "Started");
                 }
             }
 
             return RedirectToAction("Index");
-        }
-
-        [HttpPost]
-        public async Task<JsonResult> SaveUserScore (int score)
-        {
-            if (score == 0) return new JsonResult(new { isSuccessful = false });
-
-            var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
-            var currentSessionToken = GetSessionTokenInCookies();
-
-            if (Guid.TryParse(currentUserAccountToken, out var userAccountToken) && Guid.TryParse(currentSessionToken, out var sessionToken))
-            {
-                var saveResult = await _sessionRepository.AddUserScore(userAccountToken, sessionToken, score);
-                return new JsonResult(new { isSuccessful = saveResult });
-            }
-
-            return new JsonResult(new { isSuccessful = false });
         }
 
         [HttpPost]

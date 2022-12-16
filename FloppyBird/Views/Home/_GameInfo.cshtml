@@ -1,13 +1,33 @@
 ﻿@model FloppyBird.Models.HomeIndexModel
 
+@{
+  string statusBackGroundColor = "";
+
+  if (!Model.CurrentSession.IsStarted && !Model.CurrentSession.IsEnded)
+  {
+    statusBackGroundColor = "bg-warning";
+  }
+
+  if (Model.CurrentSession.IsStarted && !Model.CurrentSession.IsEnded)
+  {
+    statusBackGroundColor = "bg-success text-white";
+  }
+
+  if (Model.CurrentSession.IsStarted && Model.CurrentSession.IsEnded)
+  {
+    statusBackGroundColor = "bg-info text-white";
+  }
+}
+
 <div class="container">
     <div class="row">
         <div class="col">
             <h3 class="fw-bold text-decoration-underline text-success">@Model.CurrentSession.Name</h3>
             <h7>Connection: <span id="gameSessionConnectionStatus"></span></h7>
-            <h3 class="@(Model.CurrentSession.IsStarted ? "bg-success text-white" : "bg-warning") p-2" style="--bs-bg-opacity: .7;" id="gameStatus">
-                @(Model.CurrentSession.IsStarted ? "The game has been started" : "Waiting...")
+            <h3 class="@statusBackGroundColor p-2" style="--bs-bg-opacity: .7;" id="gameStatus">
+                @Model.CurrentSession.Status
             </h3>
+            <h3 id="timer"></h3>
         </div>
     </div>
 </div>

@@ -41,8 +41,8 @@
 {
     @section GameScriptDependencies {
     <script>
-        var base_url = "@Model.BaseUrl";
-        var isTheGameStarted = "@Model.CurrentSession.IsStarted" === "True";
+        let base_url = "@Model.BaseUrl";
+        let isTheGameStarted = "@Model.CurrentSession.IsStarted" === "True";
     </script>
     <script src="~/lib/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/session.js"></script>
