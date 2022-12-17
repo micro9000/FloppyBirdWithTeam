@@ -58,7 +58,7 @@ namespace FloppyBird.Controllers
                 {
                     model.CurrentSession = currentSession;
                     model.CurrentUserIsTheGameMaster = currentSession?.GameMasterAccountToken == model.User?.AccountToken;
-                    model.SessionScoreCard = new DomainModels.SessionScorecard(currentSession.Users);
+                    model.SessionScoreCard = new DomainModels.SessionScorecard(currentSession.Users, currentSession.ScoreCountingType);
                 }
             }
 
@@ -76,6 +76,24 @@ namespace FloppyBird.Controllers
                 {
                     await SendScoreboardUpdates(sessionToken);
                     await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("GameSessionHasBeenStarted", "Started");
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExitTheGameSession ()
+        {
+            var currentSessionToken = GetSessionTokenInCookies();
+            if (Guid.TryParse(currentSessionToken, out var sessionToken))
+            {
+                var isEnded = await _sessionRepository.EndTheSession(sessionToken);
+                if (isEnded)
+                {
+                    DeleteCurrentUserAccountTokenInCookies();
+                    DeleteSessionTokenInCookies();
+                    await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("GameSessionHasBeenEnded", "Session has ended, please exit on this session.");
                 }
             }
 
@@ -169,7 +187,7 @@ namespace FloppyBird.Controllers
         private async Task SendScoreboardUpdates(Guid sessionToken)
         {
             var session = await _sessionRepository.GetSessionbyToken(sessionToken.ToString());
-            var scoreBoard = new SessionScorecard(session?.Users);
+            var scoreBoard = new SessionScorecard(session?.Users, session.ScoreCountingType);
             await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
         }
 
@@ -182,8 +200,6 @@ namespace FloppyBird.Controllers
         private string GetCurrentUserAccountTokenInCookies() => Request.Cookies[userTokenCookieKey].ToString();
         private void SetCurrentUserAccountTokenInCookies(string accountToken) => Response.Cookies.Append(userTokenCookieKey, accountToken, cookieOption);
         private void DeleteCurrentUserAccountTokenInCookies() => Response.Cookies.Delete(userTokenCookieKey);
-
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

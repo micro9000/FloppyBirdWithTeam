@@ -6,46 +6,25 @@
 
 @if (Model.User == null)
 {
-    <div class="container w-50 mt-lg-5">
-        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="CreateNewAccount">
-            <p class="fs-1 fw-bold pb-5">Enter your name</p>
-            <input class="form-control form-control-lg" type="text" aria-label=".form-control-lg example" name="Username">
-            <button type="submit" class="btn btn-success btn-lg mt-2">Create account</button>
-        </form>
-    </div>
+  @(await Html.PartialAsync("_CreateUserForm.cshtml"))
 }
 
 @if (Model.CurrentSession == null && Model.User != null)
 {
-    <div class="container text-center">
-        <div class="row align-items-center">
-            <div class="col">
-                <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="CreateNewSession">
-                    <h3>Create new game session</h3>
-                    <input class="form-control form-control-lg mb-2" type="text" placeholder="Session name" aria-label=".form-control-lg example" name="Name">
-                    <button type="submit" class="btn btn-success btn-lg mt-2">Create</button>
-                </form>
-            </div>
-            <div class="col">
-                <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="JoinTheSession">
-                    <h3>Join game session</h3>
-                    <input class="form-control form-control-lg" type="text" placeholder="Session token" aria-label=".form-control-lg example" name="SessionToken">
-                    <button type="submit" class="btn btn-danger btn-lg mt-2">Join</button>
-                </form>
-            </div>
-        </div>
-    </div>
+  @(await Html.PartialAsync("_CreateSessionForm.cshtml"))
 }
 
 @if (Model.CurrentSession != null && Model.User != null)
 {
     @section GameScriptDependencies {
-    <script>
-        let base_url = "@Model.BaseUrl";
-        let isTheGameStarted = "@Model.CurrentSession.IsStarted" === "True";
-    </script>
-    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
-    <script src="~/js/session.js"></script>
+        <script>
+            let base_url = "@Model.BaseUrl";
+            let isTheGameStarted = "@Model.CurrentSession.IsStarted" === "True";
+            let CountEveryScore = parseInt("@((int)ScoreCountingType.CountEveryScore)");
+            let CountHighestScoreOnly = parseInt("@((int)ScoreCountingType.CountHighestScoreOnly)");
+        </script>
+        <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/session.js"></script>
     }
 
     if (Model.CurrentUserIsTheGameMaster)
@@ -64,6 +43,10 @@
                         </form>
                     }
 
+                    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="ExitTheGameSession">
+                        <button type="submit" class="btn btn-danger btn-lg">Exit</button>
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -78,15 +61,11 @@
             </div>
             <div class="col-4">
                 <div class="row">
-
                     <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="LeaveTheSession">
                         <button type="submit" class="btn btn-danger btn-lg">Exit</button>
                     </form>
-
                     @(await Html.PartialAsync("_GameInfo.cshtml", Model))
                     @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
-                    
-
                 </div>
             </div>
         </div>

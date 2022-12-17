@@ -1,0 +1,36 @@
+﻿<div class="container mt-5">
+    <div class="row align-items-center">
+        <div class="col">
+            <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="CreateNewSession">
+                <h3>Create new game session</h3>
+                <input class="form-control form-control-lg mb-2" type="text" placeholder="Session name" aria-label=".form-control-lg example" name="Name">
+                <select class="form-select" name="numberOfMinutes" aria-label="Select Minutes">
+                    <option value="2">2 minutes</option>
+                    <option value="3">3 minutes</option>
+                    <option value="5">5 minutes</option>
+                    <option value="10">10 minutes</option>
+                </select>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="scoreCountingType" value="@((int)ScoreCountingType.CountEveryScore)" id="countEveryScore" checked>
+                    <label class="form-check-label" for="flexRadioDisabled">
+                        Count every score
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="scoreCountingType" value="@((int)ScoreCountingType.CountHighestScoreOnly)" id="countHighestScoreOnly">
+                    <label class="form-check-label" for="flexRadioCheckedDisabled">
+                        Count highest score only
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-success btn-lg mt-2">Create</button>
+            </form>
+        </div>
+        <div class="col">
+            <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="JoinTheSession">
+                <h3>Join game session</h3>
+                <input class="form-control form-control-lg mb-2" type="text" placeholder="Session token" aria-label=".form-control-lg example" name="SessionToken">
+                <button type="submit" class="btn btn-danger btn-lg mt-2">Join</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -39,21 +39,23 @@ namespace FloppyBird.Data
             return await SetSessionInCache(sessionToken.ToString(), sessionInCache);
         }
 
-		public async Task<bool> EndTheSession (Guid sessionToken)
-		{
-			var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
-			if (sessionInCache == null)
-				return false;
-			sessionInCache.IsEnded = true;
-			return await SetSessionInCache(sessionToken.ToString(), sessionInCache);
-		}
+		    public async Task<bool> EndTheSession (Guid sessionToken)
+		    {
+			    var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
+			    if (sessionInCache == null)
+				    return false;
+			    sessionInCache.IsEnded = true;
+			    return await SetSessionInCache(sessionToken.ToString(), sessionInCache);
+		    }
 
-		public async Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken)
+		    public async Task<Session> CreateNewSession(CreateNewSessionParams createNewSessionParams, string currentUserAccountToken)
         {
             var session = new Session
             {
                 SessionToken = Guid.NewGuid(),
                 Name = createNewSessionParams.Name,
+                NumberOfMinutes = createNewSessionParams.NumberOfMinutes,
+                ScoreCountingType = createNewSessionParams.ScoreCountingType,
                 IsStarted = false,
                 IsEnded = false,
                 GameMasterAccountToken = Guid.Parse(currentUserAccountToken)

@@ -73,28 +73,28 @@ gameSessionConnection.on("GameSessionHasBeenEnded", function (message) {
 
 gameSessionConnection.on("ScoreboardUpdated", function (scoreboard) {
     console.log(scoreboard);
+    console.log(scoreboard.sessionScoreCountingType === CountEveryScore);
 
     $("#avengers-scores").html(scoreboard.avengersOverallScore);
     $("#justiceleave-scores").html(scoreboard.justiceLeagueOverallScore);
 
     let avengersUsers = "";
     scoreboard.avengers.forEach(function (user, idx) {
-        console.log(user);
         avengersUsers += `<tr>
                             <th scope="row">${(idx + 1)}</th>
                             <td>${user.name}</td>
-                            <td>${user.highScore}</td>
+                            <td>${scoreboard.sessionScoreCountingType === CountEveryScore ? user.totalScore : user.highScore}</td>
                         </tr>`
     });
     $("#list-group-avengers").html(avengersUsers);
 
     let justiceleagueUsers = "";
     scoreboard.justiceLeague.forEach(function (user, idx) {
-        console.log(user);
+
         justiceleagueUsers += `<tr>
                             <th scope="row">${(idx + 1)}</th>
                             <td>${user.name}</td>
-                            <td>${user.highScore}</td>
+                            <td>${scoreboard.sessionScoreCountingType === CountEveryScore ? user.totalScore : user.highScore}</td>
                         </tr>`
     });
     $("#list-group-justiceleague").html(justiceleagueUsers);

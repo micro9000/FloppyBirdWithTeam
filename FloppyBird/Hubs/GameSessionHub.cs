@@ -43,7 +43,7 @@ namespace FloppyBird.Hubs
                     var session = await _sessionRepository.GetSessionbyToken(currentSessionToken.ToString());
                     if (session.IsStarted && !session.IsEnded)
                     {
-                        var scoreBoard = new SessionScorecard(session?.Users);
+                        var scoreBoard = new SessionScorecard(session?.Users, session.ScoreCountingType);
                         await Clients.Group(currentSessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
                     }
                 }
@@ -69,7 +69,7 @@ namespace FloppyBird.Hubs
                 if (session.IsStarted)
                 {
                     DateTime startDate = session.StartedAt;
-                    DateTime endDate = startDate.AddMinutes(2);
+                    DateTime endDate = startDate.AddMinutes(session.NumberOfMinutes);
 
                     TimeSpan timeRange = endDate - startDate;
                     while (DateTime.Now < endDate)
@@ -85,7 +85,8 @@ namespace FloppyBird.Hubs
                             var isDone = await _sessionRepository.EndTheSession(Guid.Parse(sessionToken));
                             if (isDone)
 							              {
-								                var scoreBoard = new SessionScorecard(session?.Users);
+                                var updatedSession = await _sessionRepository.GetSessionbyToken(sessionToken);
+								                var scoreBoard = new SessionScorecard(updatedSession?.Users, updatedSession.ScoreCountingType);
 								                await Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
 								                await Clients.Group(sessionToken).SendAsync("GameSessionHasBeenEnded", "Finished");
 							              }

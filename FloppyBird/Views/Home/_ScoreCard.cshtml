@@ -32,7 +32,7 @@
                             <tr>
                                 <th scope="row">@(Model.SessionScoreCard.Avengers.IndexOf(user) + 1)</th>
                                 <td>@user.Name</td>
-                                <td>@user.HighScore</td>
+                                <td>@(Model.SessionScoreCard.SessionScoreCountingType == (int)ScoreCountingType.CountEveryScore ? user.TotalScore : user.HighScore)</td>
                             </tr>
                         }
                       </tbody>
@@ -57,7 +57,7 @@
                                 <tr>
                                     <th scope="row">@(Model.SessionScoreCard.JusticeLeague.IndexOf(user) + 1)</th>
                                     <td>@user.Name</td>
-                                    <td>@user.HighScore</td>
+                                    <td>@(Model.SessionScoreCard.SessionScoreCountingType == (int)ScoreCountingType.CountEveryScore ? user.TotalScore : user.HighScore)</td>
                                 </tr>
                             }
                         </tbody>

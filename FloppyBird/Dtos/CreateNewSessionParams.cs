@@ -6,5 +6,11 @@ namespace FloppyBird.Dtos
     {
         [Required]
         public string Name { get; set; }
-    }
+
+        [Required]
+        public int NumberOfMinutes { get; set; }
+
+        [Required]
+        public ScoreCountingType ScoreCountingType { get; set; }
+  }
 }

@@ -4,6 +4,8 @@
     {
         public Guid SessionToken { get; set; }
         public string Name { get; set; }
+        public int NumberOfMinutes { get; set; }
+        public ScoreCountingType ScoreCountingType { get; set; }
         public bool IsStarted { get; set; }
         public bool IsEnded { get; set; }
 
