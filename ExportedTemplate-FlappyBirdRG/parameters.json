@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_FlappyBirdWeb_name": {
+            "value": null
+        },
+        "Redis_FlappyBirdRedis_name": {
+            "value": null
+        },
+        "serverfarms_FlappyBirdPlan_name": {
+            "value": null
+        },
+        "SignalR_FlappyBirdSignalR_name": {
+            "value": null
+        },
+        "components_FlappyBird_AppInsights_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "smartdetectoralertrules_failure_anomalies___flappybird_appinsights_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_1cb6beae_e1e8_49a1_bf14_acac6f936150_SEA_externalid": {
+            "value": null
+        }
+    }
+}
