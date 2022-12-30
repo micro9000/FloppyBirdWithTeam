@@ -12,10 +12,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR(config =>
 {
     config.EnableDetailedErrors = true;
-});
-// Add below code to use Azure SignalR service
-// Install Microsoft.Azure.SignalR package
-// .AddAzureSignalR(connString)
+}).AddAzureSignalR();
+// use .AddAzureSignalR(); to use azure signalr
 // Below: replace the app.UseStaticFiles() to app.UseFileServer()
 
 builder.Services.Configure<RedisConfigOptions>(builder.Configuration.GetSection(nameof(RedisConfigOptions)));
@@ -36,13 +34,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
+app.UseRouting(); 
+app.UseFileServer();
 
 app.UseAuthorization();
 
-app.MapHub<GameSessionHub>("/gamesessionhub");
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<GameSessionHub>("/gamesessionhub");
+});
 
 app.MapControllerRoute(
     name: "default",
