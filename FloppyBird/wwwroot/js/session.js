@@ -62,13 +62,15 @@ gameSessionConnection.on("UserHasLeftTheSession", function (message) {
 });
 
 gameSessionConnection.on("GameSessionHasBeenStarted", function (message) {
-    $("#gameStatus").html(message).removeClass("bg-warning").addClass("bg-success text-white");
+    $("#gameStatusAlert").removeClass("alert-dark").addClass("alert-success");
+    $("#gameStatus").html(message);
     StartTimer();
     isTheGameStarted = true;
 });
 
 gameSessionConnection.on("GameSessionHasBeenEnded", function (message) {
-    $("#gameStatus").html(message).removeClass("bg-success text-white").addClass("bg-info");
+    $("#gameStatusAlert").removeClass("alert-success").addClass("alert-info");
+    $("#gameStatus").html(message);
 });
 
 gameSessionConnection.on("ScoreboardUpdated", function (scoreboard) {

@@ -28,8 +28,8 @@
             <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="LeaveTheSession">
                 <button type="submit" class="btn btn-danger btn-sm">Exit</button>
             </form>
-            <div class="alert @statusAlertClasses" role="alert">
-                <p> <b>Status:</b> @Model.CurrentSession.Status </p>
+            <div class="alert @statusAlertClasses" role="alert" id="gameStatusAlert">
+                <p id="gameStatus">@Model.CurrentSession.Status </p>
                 <p>Connection: <span id="gameSessionConnectionStatus"></span></p>
                 <p>Scoring type: @sessionScoreCoutingType</p>
             </div>
