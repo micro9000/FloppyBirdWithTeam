@@ -1,21 +1,21 @@
 ﻿@model FloppyBird.Models.HomeIndexModel
 
 @{
-  string statusBackGroundColor = "";
+  string statusAlertClasses = "";
 
   if (!Model.CurrentSession.IsStarted && !Model.CurrentSession.IsEnded)
   {
-    statusBackGroundColor = "bg-warning";
+        statusAlertClasses = "alert-dark";
   }
 
   if (Model.CurrentSession.IsStarted && !Model.CurrentSession.IsEnded)
   {
-    statusBackGroundColor = "bg-success text-white";
+        statusAlertClasses = "alert-success";
   }
 
   if (Model.CurrentSession.IsStarted && Model.CurrentSession.IsEnded)
   {
-    statusBackGroundColor = "bg-info text-white";
+        statusAlertClasses = "alert-danger";
   }
 
   string sessionScoreCoutingType = Model.CurrentSession.ScoreCountingType == ScoreCountingType.CountEveryScore ? "Count every score" : "Count highest score only";
@@ -24,12 +24,16 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <h3 class="fw-bold text-decoration-underline text-success">@sessionScoreCoutingType</h3>
-            <h3 class="fw-bold text-decoration-underline text-success">@Model.CurrentSession.Name</h3>
-            <h7>Connection: <span id="gameSessionConnectionStatus"></span></h7>
-            <h3 class="@statusBackGroundColor p-2" style="--bs-bg-opacity: .7;" id="gameStatus">
-                @Model.CurrentSession.Status
-            </h3>
+            <h3 class="fw-bold text-success">@Model.CurrentSession.Name</h3>
+            <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="LeaveTheSession">
+                <button type="submit" class="btn btn-danger btn-sm">Exit</button>
+            </form>
+            <div class="alert @statusAlertClasses" role="alert">
+                <p> <b>Status:</b> @Model.CurrentSession.Status </p>
+                <p>Connection: <span id="gameSessionConnectionStatus"></span></p>
+                <p>Scoring type: @sessionScoreCoutingType</p>
+            </div>
+
             <h3 id="timer"></h3>
         </div>
     </div>

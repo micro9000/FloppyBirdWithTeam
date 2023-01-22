@@ -16,52 +16,58 @@
         <div class="row">
             <div class="col">
                 <div class="p-2">
-                    <h4 class="p-2 @(currentUserGroup == Groups.Avengers ? "bg-success text-dark bg-opacity-10" : "")">Avengers</h4>
-                    <h3>Overall score: <span id="avengers-scores">@Model.SessionScoreCard.AvengersOverallScore</span></h3>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Name</th>
-                          <th scope="col">Score</th>
-                        </tr>
-                      </thead>
-                        <tbody id="list-group-avengers">
-                        @foreach (var user in Model.SessionScoreCard.Avengers)
-                        {
-                            <tr>
-                                <th scope="row">@(Model.SessionScoreCard.Avengers.IndexOf(user) + 1)</th>
-                                <td>@user.Name</td>
-                                <td>@(Model.SessionScoreCard.SessionScoreCountingType == (int)ScoreCountingType.CountEveryScore ? user.TotalScore : user.HighScore)</td>
-                            </tr>
-                        }
-                      </tbody>
-                    </table>
+                    <h4 class="@(currentUserGroup == Groups.Avengers ? "bg-success text-dark bg-opacity-10" : "")">Avengers</h4>
+                    <h5>Overall score: <span id="avengers-scores">@Model.SessionScoreCard.AvengersOverallScore</span></h5>
+
+                    <div class="overflow-auto" style="height: 65vh!important">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list-group-avengers">
+                                @foreach (var user in Model.SessionScoreCard.Avengers)
+                                {
+                                    <tr>
+                                        <th scope="row">@(Model.SessionScoreCard.Avengers.IndexOf(user) + 1)</th>
+                                        <td>@user.Name</td>
+                                        <td>@(Model.SessionScoreCard.SessionScoreCountingType == (int)ScoreCountingType.CountEveryScore ? user.TotalScore : user.HighScore)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="col">
                 <div class="p-2">
-                    <h4 class="p-2 @(currentUserGroup == Groups.JusticeLeague ? "bg-success text-dark bg-opacity-10" : "")">Justice League</h4>
-                    <h3>Overall score: <span id="justiceleave-scores">@Model.SessionScoreCard.JusticeLeagueOverallScore</span></h3>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Score</th>
-                            </tr>
-                        </thead>
-                        <tbody id="list-group-justiceleague">
-                            @foreach (var user in Model.SessionScoreCard.JusticeLeague)
-                            {
+                    <h4 class="@(currentUserGroup == Groups.JusticeLeague ? "bg-success text-dark bg-opacity-10" : "")">Justice League</h4>
+                    <h5>Overall score: <span id="justiceleave-scores">@Model.SessionScoreCard.JusticeLeagueOverallScore</span></h5>
+
+                    <div class="overflow-auto" style="height: 65vh!important">
+                        <table class="table table-bordered table-striped">
+                            <thead>
                                 <tr>
-                                    <th scope="row">@(Model.SessionScoreCard.JusticeLeague.IndexOf(user) + 1)</th>
-                                    <td>@user.Name</td>
-                                    <td>@(Model.SessionScoreCard.SessionScoreCountingType == (int)ScoreCountingType.CountEveryScore ? user.TotalScore : user.HighScore)</td>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Score</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="list-group-justiceleague">
+                                @foreach (var user in Model.SessionScoreCard.JusticeLeague)
+                                {
+                                    <tr>
+                                        <th scope="row">@(Model.SessionScoreCard.JusticeLeague.IndexOf(user) + 1)</th>
+                                        <td>@user.Name</td>
+                                        <td>@(Model.SessionScoreCard.SessionScoreCountingType == (int)ScoreCountingType.CountEveryScore ? user.TotalScore : user.HighScore)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

@@ -19,6 +19,7 @@ namespace FloppyBird.Controllers
         private readonly IHubContext<GameSessionHub> _gameSessionhubContext;
         private const string sessionTokenCookieKey = "currentSessionToken";
         private const string userTokenCookieKey = "currentUserToken";
+        private const string highscoreCookieKey = "highscore";
         private readonly CookieOptions cookieOption;
 
         public HomeController(ILogger<HomeController> logger,
@@ -70,6 +71,7 @@ namespace FloppyBird.Controllers
         {
             DeleteCurrentUserAccountTokenInCookies();
             DeleteSessionTokenInCookies();
+            DeleteHighestScore();
 
             return RedirectToAction("Index");
         }
@@ -101,6 +103,7 @@ namespace FloppyBird.Controllers
                 if (isEnded)
                 {
                     DeleteSessionTokenInCookies();
+                    DeleteHighestScore();
                     await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("GameSessionHasBeenEnded", "Session has ended, please exit on this session.");
                 }
             }
@@ -147,6 +150,7 @@ namespace FloppyBird.Controllers
                 await _sessionRepository.RemoveUserFromSession(userAccountToken, sessionTokenGuid);
                 
                 DeleteSessionTokenInCookies();
+                DeleteHighestScore();
 
                 await SendScoreboardUpdates(sessionTokenGuid);
                 await _gameSessionhubContext.Groups.RemoveFromGroupAsync(userObj.HubConnectionId, currentSessionToken.ToString());
@@ -208,6 +212,8 @@ namespace FloppyBird.Controllers
         private string GetCurrentUserAccountTokenInCookies() => Request.Cookies[userTokenCookieKey].ToString();
         private void SetCurrentUserAccountTokenInCookies(string accountToken) => Response.Cookies.Append(userTokenCookieKey, accountToken, cookieOption);
         private void DeleteCurrentUserAccountTokenInCookies() => Response.Cookies.Delete(userTokenCookieKey);
+
+        private void DeleteHighestScore() => Response.Cookies.Delete(highscoreCookieKey);
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

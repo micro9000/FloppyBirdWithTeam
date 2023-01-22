@@ -34,19 +34,20 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <p class="fs-2 fw-bold pb-lg-5">Session token: <input class="form-control form-control-lg" value="@Model.CurrentSession.SessionToken" /></p>
-
-                    @if (!Model.CurrentSession.IsStarted)
-                    {
-                        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="StartTheGameSession">
-                            <button type="submit" class="btn btn-success btn-lg">Start the session</button>
+                    <div class="input-group">
+                        <span class="input-group-text">Session token</span>
+                        <input type="text" class="form-control" value="@Model.CurrentSession.SessionToken">
+                        <button type="submit" class="btn btn-outline-dark">Copy</button>
+                        @if (!Model.CurrentSession.IsStarted)
+                        {
+                            <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="StartTheGameSession">
+                                <button type="submit" class="btn btn-success">Start the game</button>
+                            </form>
+                        }
+                        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="ExitTheGameSession">
+                            <button type="submit" class="btn btn-warning">End the game</button>
                         </form>
-                    }
-
-                    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="ExitTheGameSession">
-                        <button type="submit" class="btn btn-danger btn-lg">Exit</button>
-                    </form>
-
+                    </div>
                 </div>
             </div>
         </div>
@@ -55,15 +56,16 @@
     }
     else
     {
+        @section gameStyle {
+            <link href="~/css/gameStyle.css" rel="stylesheet" />
+        }
+
         <div class="row flex-grow-1">
             <div class="col-8">
                 @(await Html.PartialAsync("_GameScreen.cshtml"));
             </div>
-            <div class="col-4">
-                <div class="row">
-                    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="LeaveTheSession">
-                        <button type="submit" class="btn btn-danger btn-lg">Exit</button>
-                    </form>
+            <div class="col-4 overflow-auto">
+                <div>
                     @(await Html.PartialAsync("_GameInfo.cshtml", Model))
                     @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
                 </div>

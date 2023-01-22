@@ -103,14 +103,6 @@
    user-select: none;
 }
 
-html,
-body
-{
-   height: 100%;
-   overflow: hidden;
-   font-size: 16px !important;
-}
-
 #gamecontainer
 {
    position: relative;
