@@ -66,7 +66,7 @@ namespace FloppyBird.Hubs
             try
             {
                 var session = await _sessionRepository.GetSessionbyToken(sessionToken);
-                if (session.IsStarted)
+                if (session != null && session.IsStarted)
                 {
                     DateTime startDate = session.StartedAt;
                     DateTime endDate = startDate.AddMinutes(session.NumberOfMinutes);

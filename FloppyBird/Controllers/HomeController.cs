@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace FloppyBird.Controllers
 {
@@ -65,6 +66,14 @@ namespace FloppyBird.Controllers
             return View(model);
         }
 
+        public IActionResult SignOut()
+        {
+            DeleteCurrentUserAccountTokenInCookies();
+            DeleteSessionTokenInCookies();
+
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public async Task<IActionResult> StartTheGameSession()
         {
@@ -91,7 +100,6 @@ namespace FloppyBird.Controllers
                 var isEnded = await _sessionRepository.EndTheSession(sessionToken);
                 if (isEnded)
                 {
-                    DeleteCurrentUserAccountTokenInCookies();
                     DeleteSessionTokenInCookies();
                     await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("GameSessionHasBeenEnded", "Session has ended, please exit on this session.");
                 }
@@ -137,7 +145,7 @@ namespace FloppyBird.Controllers
             {
                 var userObj = await _userRepository.GetUserByAccountToken(userAccountToken.ToString());
                 await _sessionRepository.RemoveUserFromSession(userAccountToken, sessionTokenGuid);
-                DeleteCurrentUserAccountTokenInCookies();
+                
                 DeleteSessionTokenInCookies();
 
                 await SendScoreboardUpdates(sessionTokenGuid);
