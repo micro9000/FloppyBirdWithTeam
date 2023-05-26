@@ -80,17 +80,20 @@ namespace FloppyBird.Hubs
                         await writer.WriteAsync(result, cancellationToken);
                         await Task.Delay(1000, cancellationToken);
 
+                        var updatedSession = await _sessionRepository.GetSessionbyToken(sessionToken);
+
                         if ((int)remaining.TotalMinutes == 0 && remaining.Seconds == 0)
                         {
-                            var isDone = await _sessionRepository.EndTheSession(Guid.Parse(sessionToken));
-                            if (isDone)
-							              {
-                                var updatedSession = await _sessionRepository.GetSessionbyToken(sessionToken);
-								                var scoreBoard = new SessionScorecard(updatedSession?.Users, updatedSession.ScoreCountingType);
-								                await Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
-								                await Clients.Group(sessionToken).SendAsync("GameSessionHasBeenEnded", "Finished");
-							              }
-						              }
+                            await _sessionRepository.EndTheSession(Guid.Parse(sessionToken));
+						}
+
+                        if (updatedSession.IsEnded)
+                        {
+                            var scoreBoard = new SessionScorecard(updatedSession?.Users, updatedSession.ScoreCountingType);
+                            await Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
+                            await Clients.Group(sessionToken).SendAsync("GameSessionHasBeenEnded", "Finished");
+                            return;
+                        }
                     }
                 }
 

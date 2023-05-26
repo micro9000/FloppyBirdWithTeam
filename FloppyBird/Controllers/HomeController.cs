@@ -20,6 +20,7 @@ namespace FloppyBird.Controllers
         private const string sessionTokenCookieKey = "currentSessionToken";
         private const string userTokenCookieKey = "currentUserToken";
         private const string highscoreCookieKey = "highscore";
+        private const string mobileGamePlayCookieKey = "mobileGamePlay";
         private readonly CookieOptions cookieOption;
 
         public HomeController(ILogger<HomeController> logger,
@@ -67,6 +68,39 @@ namespace FloppyBird.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> ScoreCard()
+        {
+            HomeIndexModel model = new HomeIndexModel
+            {
+                BaseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}"
+            };
+
+            if (IsCurrentUserAccountTokenExistsInCookies())
+            {
+                var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
+                model.User = await _userRepository.GetUserByAccountToken(currentUserAccountToken);
+            }
+
+            if (IsSessionTokenExistsInCookies())
+            {
+                var currentSessionToken = GetSessionTokenInCookies();
+                var currentSession = await _sessionRepository.GetSessionbyToken(currentSessionToken);
+                if (currentSession != null)
+                {
+                    model.CurrentSession = currentSession;
+                    model.CurrentUserIsTheGameMaster = currentSession?.GameMasterAccountToken == model.User?.AccountToken;
+                    model.SessionScoreCard = new DomainModels.SessionScorecard(currentSession.Users, currentSession.ScoreCountingType);
+                }
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
         public IActionResult SignOut()
         {
             DeleteCurrentUserAccountTokenInCookies();
@@ -94,7 +128,7 @@ namespace FloppyBird.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ExitTheGameSession ()
+        public async Task<IActionResult> EndTheGameSession()
         {
             var currentSessionToken = GetSessionTokenInCookies();
             if (Guid.TryParse(currentSessionToken, out var sessionToken))
@@ -111,20 +145,19 @@ namespace FloppyBird.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> JoinTheSession([FromForm] JoinTheSessionParams joinTheSessionParams)
+        [HttpGet()]
+        public async Task<IActionResult> JoinTheSession([FromQuery]string sessionToken)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (!Guid.TryParse(joinTheSessionParams.SessionToken, out var sessionTokenGuid))
+            if (!Guid.TryParse(sessionToken, out var sessionTokenGuid))
             {
                 ModelState.AddModelError("sessionToken", "Invalid Session token");
                 return BadRequest(ModelState);
             }
-            string sessionToken = sessionTokenGuid.ToString();
+
+            if (!IsCurrentUserAccountTokenExistsInCookies())
+            {
+                return RedirectToAction("Index");
+            }
 
             var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
             var userObj = await _userRepository.GetUserByAccountToken(currentUserAccountToken);
@@ -138,7 +171,7 @@ namespace FloppyBird.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> LeaveTheSession()
         {
             var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
@@ -203,17 +236,23 @@ namespace FloppyBird.Controllers
             await _gameSessionhubContext.Clients.Group(sessionToken.ToString()).SendAsync("ScoreboardUpdated", scoreBoard);
         }
 
+        // SessionToken
         private bool IsSessionTokenExistsInCookies() => Request.Cookies.ContainsKey(sessionTokenCookieKey);
         private void SetSessionTokenInCookies(string SessionToken) => Response.Cookies.Append(sessionTokenCookieKey, SessionToken, cookieOption);
         private string GetSessionTokenInCookies () => Request.Cookies[sessionTokenCookieKey].ToString();
         private void DeleteSessionTokenInCookies () => Response.Cookies.Delete(sessionTokenCookieKey);
 
+        // CurrentUserAccount
         private bool IsCurrentUserAccountTokenExistsInCookies() => Request.Cookies.ContainsKey(userTokenCookieKey);
         private string GetCurrentUserAccountTokenInCookies() => Request.Cookies[userTokenCookieKey].ToString();
         private void SetCurrentUserAccountTokenInCookies(string accountToken) => Response.Cookies.Append(userTokenCookieKey, accountToken, cookieOption);
         private void DeleteCurrentUserAccountTokenInCookies() => Response.Cookies.Delete(userTokenCookieKey);
 
+        // HighestScore
         private void DeleteHighestScore() => Response.Cookies.Delete(highscoreCookieKey);
+
+        // Mobile game play
+        // mobileGamePlayCookieKey
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

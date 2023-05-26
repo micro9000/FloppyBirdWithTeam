@@ -12,7 +12,11 @@
 
 @if (Model.SessionScoreCard != null && Model.SessionScoreCard.Users != null)
 {
+    string sessionScoreCoutingType = Model.CurrentSession.ScoreCountingType == ScoreCountingType.CountEveryScore ? "Count every score" : "Count highest score only";
     <div class="container">
+        <div class="row">
+            <div class="col-12"><p><b>Scoring type:</b> @sessionScoreCoutingType</p></div>
+        </div>
         <div class="row">
             <div class="col">
                 <div class="p-2">

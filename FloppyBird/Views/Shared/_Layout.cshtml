@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model FloppyBird.Models.HomeIndexModel
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -53,13 +54,22 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">HOME</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">
+                        @if (Model.CurrentSession != null && Model.User != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="ScoreCard">SCORE CARD</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="LeaveTheSession">EXIT</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="SignOut">
-                                @(ViewData["Username"].ToString() != "" ? $"{ViewData["Username"]} | Sign-out" : "") 
+                                @(ViewData["Username"].ToString() != "" ? $"{ViewData["Username"]} | SIGN-OUT" : "") 
                             </a>
                         </li>
                     </ul>
@@ -67,14 +77,14 @@
             </div>
         </nav>
     </header>
-    <div class="container-fluid min-vh-100 d-flex flex-column">
+    <div class="full-screen-container overflow-auto vh-100">
         @RenderBody()
     </div>
 
     <div class="boundingbox" id="playerbox"></div>
     <div class="boundingbox" id="pipebox"></div>
 
-
+    <script src="~/lib/qrcode.min.js"></script>
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/lib/jquery/notify.min.js"></script>
     <script src="~/lib/jquery/jquery.transit.min.js"></script>
@@ -83,6 +93,7 @@
 
     @await RenderSectionAsync("GameScriptDependencies", required: false)
     @await RenderSectionAsync("GameScripts", required: false)
+    @await RenderSectionAsync("QRCodeScript", required: false)
     <script>
         function inIframe() {
             try {

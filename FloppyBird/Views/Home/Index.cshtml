@@ -19,6 +19,7 @@
     @section GameScriptDependencies {
         <script>
             let base_url = "@Model.BaseUrl";
+            let sessionUrl = "@Model.BaseUrl/Home/JoinTheSession?sessionToken=@Model.CurrentSession.SessionToken";
             let isTheGameStarted = "@Model.CurrentSession.IsStarted" === "True";
             let CountEveryScore = parseInt("@((int)ScoreCountingType.CountEveryScore)");
             let CountHighestScoreOnly = parseInt("@((int)ScoreCountingType.CountHighestScoreOnly)");
@@ -27,31 +28,49 @@
         <script src="~/js/session.js"></script>
     }
 
+    @(await Html.PartialAsync("_GameInfo.cshtml", Model))
+    
     if (Model.CurrentUserIsTheGameMaster)
     {
-        ViewData["Username"] = $"Game Master - {Model.User.Name}";
-         @(await Html.PartialAsync("_GameInfo.cshtml", Model))
+        ViewData["Username"] = $"*{Model.User.Name}*";
         <div class="container">
             <div class="row">
                 <div class="col">
                     <div class="input-group">
                         <span class="input-group-text">Session token</span>
-                        <input type="text" class="form-control" value="@Model.CurrentSession.SessionToken">
-                        <button type="submit" class="btn btn-outline-dark">Copy</button>
+                        <input type="text" class="form-control" value="@Model.BaseUrl/Home/JoinTheSession?sessionToken=@Model.CurrentSession.SessionToken">
                         @if (!Model.CurrentSession.IsStarted)
                         {
                             <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="StartTheGameSession">
                                 <button type="submit" class="btn btn-success">Start the game</button>
                             </form>
                         }
-                        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="ExitTheGameSession">
+                        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="EndTheGameSession">
                             <button type="submit" class="btn btn-warning">End the game</button>
                         </form>
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col">
+                    <div id="qrcode"></div>
+                </div>
+            </div>
         </div>
-        
+
+        @section QRCodeScript {
+            <script>
+                //https://stackoverflow.com/questions/67403923/how-do-i-generate-qr-code-from-url-in-javascript
+                const qrcode = new QRCode(document.getElementById('qrcode'), {
+                    text: sessionUrl,
+                    width: 300,
+                    height: 300,
+                    colorDark: '#000',
+                    colorLight: '#fff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            </script>
+        }
         @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
     }
     else
@@ -60,13 +79,12 @@
             <link href="~/css/gameStyle.css" rel="stylesheet" />
         }
 
-        <div class="row flex-grow-1">
-            <div class="col-8">
-                @(await Html.PartialAsync("_GameScreen.cshtml"));
+        <div class="row">
+            <div class="col-sm-8 col-xm-12">
+                @(await Html.PartialAsync("_GameScreen.cshtml"))
             </div>
-            <div class="col-4 overflow-auto">
+            <div class="col-4 d-none d-sm-block overflow-auto">
                 <div>
-                    @(await Html.PartialAsync("_GameInfo.cshtml", Model))
                     @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
                 </div>
             </div>

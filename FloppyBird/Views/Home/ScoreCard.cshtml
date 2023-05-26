@@ -1,0 +1,27 @@
+﻿@model FloppyBird.Models.HomeIndexModel
+@{
+    ViewData["Title"] = "Home Page";
+    ViewData["Username"] = Model.User != null ? Model.User.Name : "";
+}
+
+@if (Model.CurrentSession != null && Model.User != null)
+{
+    @section GameScriptDependencies {
+        <script>
+            let base_url = "@Model.BaseUrl";
+            let isTheGameStarted = "@Model.CurrentSession.IsStarted" === "True";
+            let CountEveryScore = parseInt("@((int)ScoreCountingType.CountEveryScore)");
+            let CountHighestScoreOnly = parseInt("@((int)ScoreCountingType.CountHighestScoreOnly)");
+        </script>
+        <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/session.js"></script>
+    }
+
+
+    if (Model.CurrentUserIsTheGameMaster)
+    {
+        ViewData["Username"] = $"*{Model.User.Name}*";
+    }
+    @(await Html.PartialAsync("_ScoreCard.cshtml", Model))
+}
+
