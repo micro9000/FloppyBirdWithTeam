@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'FloppyBirdWebApp'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_21689798E42242D2B92E19473E1A95BB }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A4D78989F1C34F41B5035305EAF56C0F }}
           package: .
