@@ -154,6 +154,7 @@ namespace FloppyBird.Controllers
                 return BadRequest(ModelState);
             }
 
+            SetSessionTokenInCookies(sessionToken);
             if (!IsCurrentUserAccountTokenExistsInCookies())
             {
                 return RedirectToAction("Index");
@@ -162,7 +163,6 @@ namespace FloppyBird.Controllers
             var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
             var userObj = await _userRepository.GetUserByAccountToken(currentUserAccountToken);
 
-            SetSessionTokenInCookies(sessionToken);
             await _sessionRepository.AddUserToSession(userObj, sessionTokenGuid);
 
             await SendScoreboardUpdates(sessionTokenGuid);
@@ -208,6 +208,15 @@ namespace FloppyBird.Controllers
                 return BadRequest(ModelState);
             }
             SetCurrentUserAccountTokenInCookies(userObj.AccountToken.ToString());
+
+            if (IsSessionTokenExistsInCookies())
+            {
+                var sessionToken = GetSessionTokenInCookies();
+                var sessionTokenGuid = Guid.Parse(sessionToken);
+                await _sessionRepository.AddUserToSession(userObj, sessionTokenGuid);
+                await SendScoreboardUpdates(sessionTokenGuid);
+                await _gameSessionhubContext.Clients.Group(sessionToken).SendAsync("UserHasJoinedTheSession", $"{userObj.Name} has joined the session");
+            }
 
             return RedirectToAction("Index");
         }

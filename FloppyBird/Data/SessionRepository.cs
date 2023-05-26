@@ -71,6 +71,9 @@ namespace FloppyBird.Data
             string sessionTokenStr = sessionToken.ToString();
             var sessionInCache = await GetSessionbyToken(sessionTokenStr);
 
+            if (sessionInCache.Users.FirstOrDefault(x => x.AccountToken == user.AccountToken) != null)
+                return false;
+
             if (sessionInCache.Users.Count == 0)
             {
                 user.Group = Groups.Avengers;
@@ -80,9 +83,6 @@ namespace FloppyBird.Data
             }
             else
             {
-                if (sessionInCache.Users.FirstOrDefault(x => x.AccountToken == user.AccountToken) != null)
-                    return false;
-
                 sessionInCache.Users.Add(user);
 
                 // User Groupings
