@@ -22,11 +22,11 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <h3 class="fw-bold text-success">@Model.CurrentSession.Name - <span id="gameStatus">@Model.CurrentSession.Status </span></h3>
-            <h3 id="timer"></h3>
             <div class="alert p-0 @statusAlertClasses" role="alert" id="gameStatusAlert">
-                <p><b>Connection:</b> <span id="gameSessionConnectionStatus"></span></p>
+                <h3 class="fw-bold">@Model.CurrentSession.Name - <span id="gameStatus">@Model.CurrentSession.Status </span></h3>
+                <h3 id="timer"></h3>
             </div>
+            <p><b>Connection:</b> <span id="gameSessionConnectionStatus"></span></p>
         </div>
     </div>
 </div>
