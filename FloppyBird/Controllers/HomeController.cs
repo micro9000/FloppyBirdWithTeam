@@ -20,7 +20,6 @@ namespace FloppyBird.Controllers
         private const string sessionTokenCookieKey = "currentSessionToken";
         private const string userTokenCookieKey = "currentUserToken";
         private const string highscoreCookieKey = "highscore";
-        private const string mobileGamePlayCookieKey = "mobileGamePlay";
         private readonly CookieOptions cookieOption;
 
         public HomeController(ILogger<HomeController> logger,
@@ -259,9 +258,6 @@ namespace FloppyBird.Controllers
 
         // HighestScore
         private void DeleteHighestScore() => Response.Cookies.Delete(highscoreCookieKey);
-
-        // Mobile game play
-        // mobileGamePlayCookieKey
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

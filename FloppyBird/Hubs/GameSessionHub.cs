@@ -60,6 +60,14 @@ namespace FloppyBird.Hubs
             return channel.Reader;
         }
 
+        private async Task SendScoreCardUpdate (Session session)
+        {
+            string sessionToken = session?.SessionToken.ToString();
+            var scoreBoard = new SessionScorecard(session?.Users, session.ScoreCountingType);
+            await Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
+            await Clients.Group(sessionToken).SendAsync("GameSessionHasBeenEnded", "Finished");
+        }
+
         private async Task WriteItemsAsync (ChannelWriter<string> writer, string sessionToken, CancellationToken cancellationToken)
         {
             Exception localException = null;
@@ -85,13 +93,15 @@ namespace FloppyBird.Hubs
                         if ((int)remaining.TotalMinutes == 0 && remaining.Seconds == 0)
                         {
                             await _sessionRepository.EndTheSession(Guid.Parse(sessionToken));
-						}
+                            updatedSession = await _sessionRepository.GetSessionbyToken(sessionToken);
+
+                            await SendScoreCardUpdate(updatedSession);
+                            return;
+                        }
 
                         if (updatedSession.IsEnded)
                         {
-                            var scoreBoard = new SessionScorecard(updatedSession?.Users, updatedSession.ScoreCountingType);
-                            await Clients.Group(sessionToken).SendAsync("ScoreboardUpdated", scoreBoard);
-                            await Clients.Group(sessionToken).SendAsync("GameSessionHasBeenEnded", "Finished");
+                            await SendScoreCardUpdate(updatedSession);
                             return;
                         }
                     }
