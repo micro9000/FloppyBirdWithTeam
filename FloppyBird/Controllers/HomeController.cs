@@ -99,6 +99,49 @@ namespace FloppyBird.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> ResetSession()
+        {
+            HomeIndexModel model = new HomeIndexModel
+            {
+                BaseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}"
+            };
+
+            if (!IsCurrentUserAccountTokenExistsInCookies())
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (IsCurrentUserAccountTokenExistsInCookies())
+            {
+                var currentUserAccountToken = GetCurrentUserAccountTokenInCookies();
+                model.User = await _userRepository.GetUserByAccountToken(currentUserAccountToken);
+            }
+
+            if (IsSessionTokenExistsInCookies())
+            {
+                var currentSessionToken = GetSessionTokenInCookies();
+                var currentSession = await _sessionRepository.GetSessionbyToken(currentSessionToken);
+                if (currentSession != null)
+                {
+                    model.CurrentSession = currentSession;
+                    model.CurrentUserIsTheGameMaster = currentSession?.GameMasterAccountToken == model.User?.AccountToken;
+                    model.SessionScoreCard = new DomainModels.SessionScorecard(currentSession.Users, currentSession.ScoreCountingType);
+
+
+                    if (!model.CurrentUserIsTheGameMaster)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                }
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(model);
+        }
+
         [HttpGet]
         public IActionResult SignOut()
         {
@@ -233,6 +276,34 @@ namespace FloppyBird.Controllers
             var sessionObj = await _sessionRepository.CreateNewSession(createNewSessionParams, currentUserAccountToken);
 
             SetSessionTokenInCookies(sessionObj.SessionToken.ToString());
+
+            return RedirectToAction("Index");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ResetGameSession([FromForm] ResetSessionParams resetSessionParams)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!IsSessionTokenExistsInCookies())
+            {
+                return RedirectToAction("Index");
+            }
+
+            var sessionToken = GetSessionTokenInCookies();
+            var sessionTokenGuid = Guid.Parse(sessionToken);
+
+            var isResetSuccess = await _sessionRepository.ResetGameSession(sessionTokenGuid, resetSessionParams.ScoreCountingType, resetSessionParams.NumberOfMinutes);
+
+            if (isResetSuccess)
+            {
+                await SendScoreboardUpdates(sessionTokenGuid);
+                await _gameSessionhubContext.Clients.Group(sessionToken).SendAsync("GameSessionHasBeenReset", $"Game session has been reset");
+            }
 
             return RedirectToAction("Index");
         }

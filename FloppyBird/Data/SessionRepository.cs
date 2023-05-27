@@ -18,6 +18,7 @@ namespace FloppyBird.Data
         Task<bool> AddUserToSession(User user, Guid sessionToken);
         Task RemoveUserFromSession(Guid userAccountToken, Guid sessionToken);
         Task<bool> AddUserScore(Guid userAccountToken, Guid sessionToken, int score);
+        Task<bool> ResetGameSession(Guid sessionToken, ScoreCountingType scoreCountingType, int numberOfMinutes);
     }
 
     public class SessionRepository : ISessionRepository
@@ -140,7 +141,27 @@ namespace FloppyBird.Data
 			return false;
 		}
 
-		private async Task<bool> SetSessionInCache(string sessionToken, Session session)
+        public async Task<bool> ResetGameSession(Guid sessionToken, ScoreCountingType scoreCountingType, int numberOfMinutes)
+        {
+            var sessionInCache = await this.GetSessionbyToken(sessionToken.ToString());
+            if (sessionInCache == null)
+                return false;
+
+            sessionInCache.IsStarted = false;
+            sessionInCache.IsEnded = false;
+            sessionInCache.ScoreCountingType = scoreCountingType;
+            sessionInCache.NumberOfMinutes = numberOfMinutes;
+
+            foreach(var user in sessionInCache.Users)
+            {
+                user.Scores.Clear();
+            }
+
+            var saveResult = await SetSessionInCache(sessionToken.ToString(), sessionInCache);
+            return saveResult;
+        }
+
+        private async Task<bool> SetSessionInCache(string sessionToken, Session session)
         {
             return await _cacheService.StringSetObjToCache<Session>(sessionToken, session);
         }

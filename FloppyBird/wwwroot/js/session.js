@@ -73,6 +73,11 @@ gameSessionConnection.on("GameSessionHasBeenEnded", function (message) {
     $("#gameStatus").html(message);
 });
 
+gameSessionConnection.on("GameSessionHasBeenReset", function (message) {
+    $("#gameStatusAlert").removeClass("alert-success").addClass("alert-dark");
+    $("#gameStatus").html(message);
+});
+
 gameSessionConnection.on("ScoreboardUpdated", function (scoreboard) {
     console.log(scoreboard);
     console.log(scoreboard.sessionScoreCountingType === CountEveryScore);

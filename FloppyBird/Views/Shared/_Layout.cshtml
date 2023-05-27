@@ -67,6 +67,12 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="LeaveTheSession">EXIT</a>
                             </li>
                         }
+                        @if (Model.CurrentSession != null && Model.User != null && Model.CurrentUserIsTheGameMaster)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="ResetSession">RESET</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="SignOut">
                                 @(ViewData["Username"].ToString() != "" ? $"{ViewData["Username"]} | SIGN-OUT" : "") 
